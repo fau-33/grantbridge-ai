@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GrantBridge AI — Radar Global de Financiamento Climático</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+    <!-- Navbar -->
+    <header
+      class="border-b border-slate-800 bg-slate-900/60 backdrop-blur sticky top-0 z-10"
+    >
+      <div
+        class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between"
+      >
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">🌱</span>
+          <span class="font-bold text-lg tracking-tight text-emerald-400"
+            >GrantBridge AI</span
+          >
+          <span
+            class="text-xs bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full ml-2"
+            >Hack Brasil 2026</span
+          >
+        </div>
+        <div class="flex items-center gap-3 text-xs text-slate-400">
+          <span class="flex items-center gap-1.5"
+            ><span
+              class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"
+            ></span>
+            Neon DB Conectado</span
+          >
+          <span>•</span>
+          <span>Firecrawl Engine v1</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main
+      class="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8"
+    >
+      <!-- Coluna Esquerda: Entrada -->
+      <section
+        class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit"
+      >
+        <h1 class="text-xl font-semibold text-white mb-1">
+          Descreva seu Projeto Ambiental
+        </h1>
+        <p class="text-sm text-slate-400 mb-5">
+          A IA varre fundos climáticos globais e redige sua proposta técnica em
+          inglês.
+        </p>
+
+        <label
+          class="block text-xs font-medium uppercase tracking-wider text-slate-400 mb-2"
+          >Exemplos Rápidos (1 clique)</label
+        >
+        <div class="flex flex-wrap gap-2 mb-4">
+          <button
+            onclick="setExample(1)"
+            class="text-xs bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 px-3 py-1.5 rounded-lg transition"
+          >
+            🌊 Manguezais Bahia
+          </button>
+          <button
+            onclick="setExample(2)"
+            class="text-xs bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 px-3 py-1.5 rounded-lg transition"
+          >
+            ♻️ Cooperativa Reciclagem
+          </button>
+          <button
+            onclick="setExample(3)"
+            class="text-xs bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 px-3 py-1.5 rounded-lg transition"
+          >
+            🌳 Agrofloresta Amazônia
+          </button>
+        </div>
+
+        <textarea
+          id="ongInput"
+          rows="5"
+          class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 mb-4"
+          placeholder="Ex: Somos uma associação comunitária de marisqueiras e pescadores em Salvador buscando recursos para restauração de manguezais..."
+        ></textarea>
+
+        <button
+          onclick="searchGrants()"
+          class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20"
+        >
+          🔍 Buscar Editais Globais
+        </button>
+
+        <div
+          id="statusLog"
+          class="hidden mt-4 p-3 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-emerald-400"
+        >
+          > Conectando ao Firecrawl API...<br />
+          > Consultando índices no Neon PostgreSQL...<br />
+          > 3 fundos internacionais compatíveis encontrados!
+        </div>
+      </section>
+
+      <!-- Coluna Direita: Resultados -->
+      <section class="lg:col-span-7 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-white">
+            Editais Internacionais Compatíveis
+          </h2>
+          <span class="text-xs text-slate-400">Ordenado por Match Score</span>
+        </div>
+
+        <!-- Card 1 -->
+        <div
+          class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-emerald-500/50 transition"
+        >
+          <div class="flex justify-between items-start gap-4 mb-2">
+            <div>
+              <span class="text-xs text-emerald-400 font-medium"
+                >Global Greengrants Fund • EUA</span
+              >
+              <h3 class="text-base font-bold text-white">
+                Coastal Resilience & Mangrove Protection Grant
+              </h3>
+            </div>
+            <span
+              class="bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-xs font-bold px-2.5 py-1 rounded-full"
+            >
+              96% Match
+            </span>
+          </div>
+          <p class="text-sm text-slate-400 mb-4">
+            Apoio direto para organizações comunitárias na América Latina
+            focadas em proteção de ecossistemas costeiros e adaptação climática.
+          </p>
+          <div
+            class="flex items-center justify-between pt-3 border-t border-slate-800"
+          >
+            <div class="text-xs text-slate-300">
+              <span class="text-slate-500">Valor:</span>
+              <strong>US$ 25,000</strong> •
+              <span class="text-slate-500">Prazo:</span> 15 Jan 2027
+            </div>
+            <button
+              onclick="
+                openModal('Coastal Resilience & Mangrove Protection Grant')
+              "
+              class="text-xs bg-emerald-500/10 hover:bg-emerald-500 hover:text-slate-950 text-emerald-300 border border-emerald-500/40 font-semibold px-3.5 py-1.5 rounded-lg transition"
+            >
+              ✨ Gerar Proposta em Inglês
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div
+          class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-emerald-500/50 transition"
+        >
+          <div class="flex justify-between items-start gap-4 mb-2">
+            <div>
+              <span class="text-xs text-emerald-400 font-medium"
+                >UNDP Small Grants Programme • ONU</span
+              >
+              <h3 class="text-base font-bold text-white">
+                Community-Based Climate Adaptation Initiative
+              </h3>
+            </div>
+            <span
+              class="bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-xs font-bold px-2.5 py-1 rounded-full"
+            >
+              91% Match
+            </span>
+          </div>
+          <p class="text-sm text-slate-400 mb-4">
+            Financiamento não reembolsável para cooperativas e associações
+            locais implementarem soluções baseadas na natureza e economia
+            circular.
+          </p>
+          <div
+            class="flex items-center justify-between pt-3 border-t border-slate-800"
+          >
+            <div class="text-xs text-slate-300">
+              <span class="text-slate-500">Valor:</span>
+              <strong>US$ 50,000</strong> •
+              <span class="text-slate-500">Prazo:</span> Fluxo Contínuo
+            </div>
+            <button
+              onclick="
+                openModal('Community-Based Climate Adaptation Initiative')
+              "
+              class="text-xs bg-emerald-500/10 hover:bg-emerald-500 hover:text-slate-950 text-emerald-300 border border-emerald-500/40 font-semibold px-3.5 py-1.5 rounded-lg transition"
+            >
+              ✨ Gerar Proposta em Inglês
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modal de Proposta -->
+    <div
+      id="proposalModal"
+      class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+    >
+      <div
+        class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-6"
+      >
+        <div class="flex justify-between items-center mb-4">
+          <h3 id="modalTitle" class="font-bold text-emerald-400">
+            Rascunho Técnico Gerado (Inglês)
+          </h3>
+          <button
+            onclick="closeModal()"
+            class="text-slate-400 hover:text-white text-sm"
+          >
+            ✕ Fechar
+          </button>
+        </div>
+        <pre
+          class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-slate-300 whitespace-pre-wrap font-mono leading-relaxed mb-4"
+        >
+SUBJECT: Grant Application – Community-Led Coastal & Green Economy Initiative (Bahia, Brazil)
+
+Dear Selection Committee,
+
+We are submitting our proposal on behalf of our local grassroots organization in Salvador, Bahia, Brazil. Our initiative directly addresses climate vulnerability by combining community-led ecosystem restoration with sustainable green income generation.
+
+KEY OBJECTIVES:
+1. Restore degraded coastal mangrove buffers protecting vulnerable communities.
+2. Establish measurable carbon and biodiversity monitoring led by local residents.
+3. Ensure 100% of funds directly strengthen local green supply chains.
+
+Requested Amount: US$ 25,000 | Duration: 12 Months</pre
+        >
+        <div class="flex justify-end gap-3">
+          <button
+            onclick="closeModal()"
+            class="bg-emerald-500 text-slate-950 font-semibold text-xs px-4 py-2 rounded-lg"
+          >
+            Copiar Texto
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const examples = {
+        1: "Associação comunitária de marisqueiras e pescadores em Salvador (BA) buscando financiamento para restauração de 15 hectares de manguezais e monitoramento ambiental participativo.",
+        2: "Cooperativa de catadores de materiais recicláveis atuando na coleta seletiva solidária e economia circular em bairros periféricos, precisando de equipamentos de triagem.",
+        3: "Iniciativa de agricultura sintrópica e recuperação de nascentes com pequenos produtores rurais no bioma Mata Atlântica/Amazônia.",
+      };
+      function setExample(id) {
+        document.getElementById("ongInput").value = examples[id];
+      }
+      function searchGrants() {
+        document.getElementById("statusLog").classList.remove("hidden");
+      }
+      function openModal(title) {
+        document.getElementById("modalTitle").innerText = "Proposta: " + title;
+        document.getElementById("proposalModal").classList.remove("hidden");
+      }
+      function closeModal() {
+        document.getElementById("proposalModal").classList.add("hidden");
+      }
+    </script>
+  </body>
+</html>
