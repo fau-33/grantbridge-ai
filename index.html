@@ -1,268 +1,1170 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GrantBridge AI — Radar Global de Financiamento Climático</title>
+    <title>GrantBridge AI — Financiamento Climático Global para o Brasil</title>
+    <meta
+      name="description"
+      content="Conectando pequenas ONGs, cooperativas e iniciativas ambientais locais do Brasil a fundos e editais climáticos internacionais."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: {
+              display: ['"Space Grotesk"', "sans-serif"],
+              sans: ['"Plus Jakarta Sans"', "sans-serif"],
+              mono: ['"JetBrains Mono"', "monospace"],
+            },
+            colors: {
+              canopy: {
+                950: "#050b08",
+                900: "#0a1611",
+                850: "#0e1f18",
+                800: "#132920",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      :root {
+        --bg-base: #050b08;
+        --bg-surface: #0a1611;
+        --bg-elevated: #0f2119;
+        --border-subtle: rgba(52, 211, 153, 0.14);
+        --border-strong: rgba(52, 211, 153, 0.34);
+        --accent-emerald: #10b981;
+        --accent-glow: #34d399;
+        --accent-amber: #f59e0b;
+      }
+
+      body {
+        background-color: var(--bg-base);
+        background-image:
+          radial-gradient(ellipse 80% 50% at 15% -10%, rgba(16, 185, 129, 0.16), transparent 60%),
+          radial-gradient(ellipse 60% 40% at 90% 10%, rgba(245, 158, 11, 0.08), transparent 55%),
+          radial-gradient(rgba(52, 211, 153, 0.06) 1px, transparent 1px);
+        background-size: 100% 100%, 100% 100%, 28px 28px;
+      }
+
+      .glass-panel {
+        background: linear-gradient(180deg, rgba(14, 31, 24, 0.86) 0%, rgba(10, 22, 17, 0.94) 100%);
+        border: 1px solid var(--border-subtle);
+        box-shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.85);
+      }
+
+      .grant-card {
+        background: rgba(10, 22, 17, 0.78);
+        border: 1px solid rgba(52, 211, 153, 0.12);
+        transition: border-color 180ms ease, transform 180ms ease, background-color 180ms ease;
+      }
+
+      .grant-card:hover {
+        border-color: rgba(52, 211, 153, 0.42);
+        background: rgba(15, 33, 25, 0.92);
+        transform: translateY(-2px);
+      }
+
+      .proposal-scroll::-webkit-scrollbar {
+        width: 8px;
+      }
+      .proposal-scroll::-webkit-scrollbar-track {
+        background: #050b08;
+      }
+      .proposal-scroll::-webkit-scrollbar-thumb {
+        background: #1a382c;
+        border-radius: 999px;
+      }
+      .proposal-scroll::-webkit-scrollbar-thumb:hover {
+        background: #10b981;
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-fade-up {
+        animation: fadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+    </style>
   </head>
-  <body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
-    <!-- Navbar -->
-    <header
-      class="border-b border-slate-800 bg-slate-900/60 backdrop-blur sticky top-0 z-10"
-    >
-      <div
-        class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between"
-      >
-        <div class="flex items-center gap-2">
-          <span class="text-2xl">🌱</span>
-          <span class="font-bold text-lg tracking-tight text-emerald-400"
-            >GrantBridge AI</span
-          >
-          <span
-            class="text-xs bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full ml-2"
-            >Hack Brasil 2026</span
-          >
+
+  <body class="text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
+    <!-- Top Navigation -->
+    <header class="sticky top-0 z-30 border-b border-emerald-500/15 bg-canopy-950/85 backdrop-blur-xl">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-400/35 flex items-center justify-center text-emerald-400 shadow-inner shadow-emerald-500/20">
+            <i data-lucide="sprout" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-display font-bold text-lg tracking-tight text-white">GrantBridge AI</span>
+              <span class="hidden sm:inline-flex items-center text-[11px] font-mono font-medium bg-emerald-500/12 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                Hack Brasil 2026
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-400 hidden sm:block">Meio Ambiente &amp; Economia Verde</p>
+          </div>
         </div>
-        <div class="flex items-center gap-3 text-xs text-slate-400">
-          <span class="flex items-center gap-1.5"
-            ><span
-              class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"
-            ></span>
-            Neon DB Conectado</span
+
+        <div class="flex items-center gap-2.5">
+          <div
+            id="apiStatusPill"
+            class="flex items-center gap-2 text-xs font-mono px-3 py-1.5 rounded-full border border-slate-700/80 bg-canopy-900/90 text-slate-300"
           >
-          <span>•</span>
-          <span>Firecrawl Engine v1</span>
+            <span id="apiStatusDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+            <span id="apiStatusLabel">Conectando API...</span>
+          </div>
+
+          <button
+            type="button"
+            onclick="openIngestModal()"
+            class="inline-flex items-center gap-1.5 text-xs font-semibold bg-emerald-500/15 hover:bg-emerald-500 hover:text-canopy-950 text-emerald-300 border border-emerald-500/40 px-3.5 py-2 rounded-xl transition cursor-pointer"
+          >
+            <i data-lucide="flame" class="w-3.5 h-3.5"></i>
+            <span class="hidden md:inline">Adicionar Edital (Firecrawl)</span>
+            <span class="md:hidden">+ Edital</span>
+          </button>
         </div>
       </div>
     </header>
 
-    <!-- Main Content -->
-    <main
-      class="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8"
-    >
-      <!-- Coluna Esquerda: Entrada -->
-      <section
-        class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit"
-      >
-        <h1 class="text-xl font-semibold text-white mb-1">
-          Descreva seu Projeto Ambiental
-        </h1>
-        <p class="text-sm text-slate-400 mb-5">
-          A IA varre fundos climáticos globais e redige sua proposta técnica em
-          inglês.
-        </p>
+    <!-- Hero & Impact Telemetry -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6 animate-fade-up">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
+        <div class="lg:col-span-7 space-y-4">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/25">
+              <i data-lucide="flame" class="w-3 h-3"></i> Firecrawl v2
+            </span>
+            <span class="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/25">
+              <i data-lucide="sparkles" class="w-3 h-3"></i> Gemini 2.5 Flash
+            </span>
+            <span class="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/25">
+              <i data-lucide="database" class="w-3 h-3"></i> Neon PostgreSQL
+            </span>
+            <span class="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/25">
+              <i data-lucide="message-square-ring" class="w-3 h-3"></i> Nvoip Alerts
+            </span>
+          </div>
 
-        <label
-          class="block text-xs font-medium uppercase tracking-wider text-slate-400 mb-2"
-          >Exemplos Rápidos (1 clique)</label
-        >
-        <div class="flex flex-wrap gap-2 mb-4">
-          <button
-            onclick="setExample(1)"
-            class="text-xs bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 px-3 py-1.5 rounded-lg transition"
-          >
-            🌊 Manguezais Bahia
-          </button>
-          <button
-            onclick="setExample(2)"
-            class="text-xs bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 px-3 py-1.5 rounded-lg transition"
-          >
-            ♻️ Cooperativa Reciclagem
-          </button>
-          <button
-            onclick="setExample(3)"
-            class="text-xs bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 px-3 py-1.5 rounded-lg transition"
-          >
-            🌳 Agrofloresta Amazônia
-          </button>
+          <h1 class="font-display text-3xl sm:text-4xl lg:text-[2.65rem] font-bold tracking-tight text-white leading-[1.12]">
+            Conecte iniciativas ambientais brasileiras a
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-emerald-400 to-teal-300">
+              fundos climáticos globais.
+            </span>
+          </h1>
+          <p class="text-sm sm:text-base text-slate-300/90 max-w-2xl leading-relaxed">
+            Raspamos editais internacionais ao vivo, calculamos o <strong class="text-white">Match Score</strong> com a sua ONG ou cooperativa, redigimos a <strong class="text-white">Project Concept Note em inglês</strong> pronta para submissão e enviamos alerta instantâneo no celular do líder comunitário.
+          </p>
         </div>
 
-        <textarea
-          id="ongInput"
-          rows="5"
-          class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 mb-4"
-          placeholder="Ex: Somos uma associação comunitária de marisqueiras e pescadores em Salvador buscando recursos para restauração de manguezais..."
-        ></textarea>
+        <!-- Live Impact Metrics -->
+        <div class="lg:col-span-5 grid grid-cols-3 gap-3">
+          <div class="glass-panel rounded-2xl p-4">
+            <div class="flex items-center justify-between text-emerald-400 mb-2">
+              <i data-lucide="globe-2" class="w-4 h-4"></i>
+              <span class="text-[10px] font-mono uppercase text-slate-400">Neon DB</span>
+            </div>
+            <div id="metricGrantsCount" class="font-display text-2xl sm:text-3xl font-bold text-white">--</div>
+            <p class="text-[11px] text-slate-400 mt-0.5">Editais Ativos</p>
+          </div>
 
+          <div class="glass-panel rounded-2xl p-4">
+            <div class="flex items-center justify-between text-amber-400 mb-2">
+              <i data-lucide="banknote" class="w-4 h-4"></i>
+              <span class="text-[10px] font-mono uppercase text-slate-400">Pool</span>
+            </div>
+            <div class="font-display text-2xl sm:text-3xl font-bold text-white">$2M+</div>
+            <p class="text-[11px] text-slate-400 mt-0.5">Capital Mapeado</p>
+          </div>
+
+          <div class="glass-panel rounded-2xl p-4">
+            <div class="flex items-center justify-between text-emerald-300 mb-2">
+              <i data-lucide="languages" class="w-4 h-4"></i>
+              <span class="text-[10px] font-mono uppercase text-slate-400">IA</span>
+            </div>
+            <div class="font-display text-2xl sm:text-3xl font-bold text-white">PT→EN</div>
+            <p class="text-[11px] text-slate-400 mt-0.5">Proposta Pronta</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Offline Fallback Banner (shown only if backend unreachable) -->
+      <div
+        id="offlineBanner"
+        class="hidden mt-5 px-4 py-3 rounded-xl border border-amber-500/35 bg-amber-500/10 text-amber-200 text-xs flex flex-wrap items-center justify-between gap-2"
+      >
+        <div class="flex items-center gap-2">
+          <i data-lucide="wifi-off" class="w-4 h-4 text-amber-400 shrink-0"></i>
+          <span>
+            <strong>Modo Demonstração Offline:</strong> Backend em <code id="offlineUrlText" class="font-mono text-amber-100"></code> não respondeu. Exibindo editais locais e simulador inteligente.
+          </span>
+        </div>
         <button
-          onclick="searchGrants()"
-          class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20"
+          type="button"
+          onclick="bootstrapApp()"
+          class="font-mono text-[11px] underline hover:text-white cursor-pointer"
         >
-          🔍 Buscar Editais Globais
+          Tentar reconectar
         </button>
+      </div>
+    </section>
 
-        <div
-          id="statusLog"
-          class="hidden mt-4 p-3 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-emerald-400"
-        >
-          > Conectando ao Firecrawl API...<br />
-          > Consultando índices no Neon PostgreSQL...<br />
-          > 3 fundos internacionais compatíveis encontrados!
+    <!-- Main Asymmetric Command Workspace -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
+      <!-- Left Column: NGO Diagnosis + Match Engine -->
+      <section class="lg:col-span-5 space-y-6">
+        <div class="glass-panel rounded-3xl p-6 sm:p-7">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <h2 class="font-display text-xl font-bold text-white flex items-center gap-2">
+              <i data-lucide="compass" class="w-5 h-5 text-emerald-400"></i>
+              Diagnóstico da Organização
+            </h2>
+            <span class="text-[11px] font-mono text-emerald-300/90 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+              Passo 1
+            </span>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-400 mb-5">
+            Descreva em português a atuação da sua ONG, cooperativa ou projeto comunitário no Brasil.
+          </p>
+
+          <!-- Quick-Fill Presets -->
+          <div class="mb-4">
+            <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-2">
+              Preenchimento Rápido (1 clique)
+            </label>
+            <div class="grid grid-cols-1 gap-2">
+              <button
+                type="button"
+                onclick="setExample(1)"
+                class="text-left text-xs bg-canopy-950/80 hover:bg-emerald-500/12 text-emerald-200 border border-emerald-500/20 hover:border-emerald-400/50 px-3.5 py-2.5 rounded-xl transition flex items-center justify-between gap-2 cursor-pointer"
+              >
+                <span class="flex items-center gap-2 font-medium">
+                  <i data-lucide="waves" class="w-3.5 h-3.5 text-emerald-400"></i>
+                  Restauração de Manguezais - BA
+                </span>
+                <span class="text-[10px] font-mono text-slate-400">Usar →</span>
+              </button>
+
+              <button
+                type="button"
+                onclick="setExample(2)"
+                class="text-left text-xs bg-canopy-950/80 hover:bg-emerald-500/12 text-emerald-200 border border-emerald-500/20 hover:border-emerald-400/50 px-3.5 py-2.5 rounded-xl transition flex items-center justify-between gap-2 cursor-pointer"
+              >
+                <span class="flex items-center gap-2 font-medium">
+                  <i data-lucide="recycle" class="w-3.5 h-3.5 text-emerald-400"></i>
+                  Cooperativa de Reciclagem Urbana
+                </span>
+                <span class="text-[10px] font-mono text-slate-400">Usar →</span>
+              </button>
+
+              <button
+                type="button"
+                onclick="setExample(3)"
+                class="text-left text-xs bg-canopy-950/80 hover:bg-emerald-500/12 text-emerald-200 border border-emerald-500/20 hover:border-emerald-400/50 px-3.5 py-2.5 rounded-xl transition flex items-center justify-between gap-2 cursor-pointer"
+              >
+                <span class="flex items-center gap-2 font-medium">
+                  <i data-lucide="trees" class="w-3.5 h-3.5 text-emerald-400"></i>
+                  Agrofloresta e Bioeconomia - Amazônia
+                </span>
+                <span class="text-[10px] font-mono text-slate-400">Usar →</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Profile Textarea -->
+          <div class="mb-4">
+            <label for="ongInput" class="block text-xs font-medium text-slate-300 mb-1.5">
+              Perfil e Objetivos da Iniciativa Ambiental
+            </label>
+            <textarea
+              id="ongInput"
+              rows="5"
+              maxlength="4000"
+              class="w-full bg-canopy-950/90 border border-emerald-500/20 rounded-2xl p-3.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition resize-y"
+              placeholder="Ex: Somos uma associação comunitária de marisqueiras e pescadores em Salvador (BA) buscando recursos para restauração de manguezais e monitoramento participativo..."
+            ></textarea>
+          </div>
+
+          <!-- Optional WhatsApp / SMS Alert Field -->
+          <div class="mb-5 p-3.5 rounded-2xl bg-canopy-950/75 border border-emerald-500/15">
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <label for="phoneInput" class="text-xs font-medium text-slate-200 flex items-center gap-1.5">
+                <i data-lucide="smartphone" class="w-3.5 h-3.5 text-amber-400"></i>
+                Telefone / WhatsApp com DDD (opcional)
+              </label>
+              <span class="inline-flex items-center gap-1 text-[10px] font-mono text-amber-300 bg-amber-500/12 border border-amber-500/25 px-2 py-0.5 rounded-full">
+                Receber alerta instantâneo via Nvoip
+              </span>
+            </div>
+            <input
+              id="phoneInput"
+              type="tel"
+              inputmode="numeric"
+              placeholder="Ex: 71999999999"
+              class="w-full bg-canopy-900 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-400/70 transition"
+            />
+          </div>
+
+          <!-- Primary Action CTA -->
+          <button
+            id="matchBtn"
+            type="button"
+            onclick="runMatch()"
+            class="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-[0.99] text-canopy-950 font-display font-bold text-sm py-3.5 px-5 rounded-2xl transition shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+            <span id="matchBtnLabel">Calcular Match + Redigir Proposta em Inglês</span>
+          </button>
+
+          <!-- Live Pipeline Terminal Log -->
+          <div
+            id="pipelineLog"
+            class="hidden mt-4 p-3.5 rounded-xl bg-canopy-950 border border-emerald-500/25 text-xs font-mono text-emerald-300 space-y-1.5"
+          ></div>
+        </div>
+
+        <!-- Integrations Health Card -->
+        <div class="glass-panel rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[11px] font-mono uppercase tracking-wider text-slate-400">
+              Status das Integrações
+            </span>
+            <button
+              type="button"
+              onclick="checkHealth()"
+              class="text-[11px] font-mono text-emerald-400 hover:text-emerald-300 cursor-pointer"
+            >
+              Atualizar
+            </button>
+          </div>
+          <div id="healthGrid" class="grid grid-cols-2 gap-2 text-xs">
+            <div class="px-3 py-2 rounded-xl bg-canopy-950/80 border border-slate-800 flex items-center justify-between">
+              <span class="text-slate-300">Neon DB</span>
+              <span id="healthNeon" class="font-mono text-[11px] text-slate-400">...</span>
+            </div>
+            <div class="px-3 py-2 rounded-xl bg-canopy-950/80 border border-slate-800 flex items-center justify-between">
+              <span class="text-slate-300">Firecrawl v2</span>
+              <span id="healthFirecrawl" class="font-mono text-[11px] text-slate-400">...</span>
+            </div>
+            <div class="px-3 py-2 rounded-xl bg-canopy-950/80 border border-slate-800 flex items-center justify-between">
+              <span class="text-slate-300">Gemini AI</span>
+              <span id="healthGemini" class="font-mono text-[11px] text-slate-400">...</span>
+            </div>
+            <div class="px-3 py-2 rounded-xl bg-canopy-950/80 border border-slate-800 flex items-center justify-between">
+              <span class="text-slate-300">Nvoip v3</span>
+              <span id="healthNvoip" class="font-mono text-[11px] text-slate-400">...</span>
+            </div>
+          </div>
         </div>
       </section>
 
-      <!-- Coluna Direita: Resultados -->
-      <section class="lg:col-span-7 space-y-4">
-        <div class="flex items-center justify-between">
-          <h2 class="text-lg font-semibold text-white">
-            Editais Internacionais Compatíveis
-          </h2>
-          <span class="text-xs text-slate-400">Ordenado por Match Score</span>
+      <!-- Right Column: Match Dossier Result + Live Grants Radar -->
+      <section class="lg:col-span-7 space-y-7">
+        <!-- Winning Match & English Proposal Dossier (revealed after /api/match) -->
+        <div
+          id="matchResultSection"
+          class="hidden glass-panel rounded-3xl p-6 sm:p-7 border border-emerald-400/35 animate-fade-up"
+        >
+          <div class="flex flex-wrap items-start justify-between gap-4 pb-5 border-b border-emerald-500/15">
+            <div class="space-y-1.5 flex-1 min-w-[220px]">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="inline-flex items-center gap-1 text-[11px] font-mono font-semibold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-2.5 py-0.5 rounded-full">
+                  <i data-lucide="award" class="w-3 h-3"></i> Edital Vencedor
+                </span>
+                <span id="resultAiBadge" class="text-[11px] font-mono text-slate-400"></span>
+              </div>
+              <h2 id="resultGrantTitle" class="font-display text-xl sm:text-2xl font-bold text-white leading-snug"></h2>
+              <p id="resultGrantMeta" class="text-xs text-emerald-300 font-medium"></p>
+            </div>
+
+            <!-- Distinctive SVG Match Score Gauge -->
+            <div class="flex items-center gap-3 bg-canopy-950/90 border border-emerald-500/25 rounded-2xl px-4 py-3 shrink-0">
+              <div class="relative w-14 h-14 flex items-center justify-center">
+                <svg class="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
+                  <circle cx="28" cy="28" r="23" stroke="rgba(52,211,153,0.15)" stroke-width="5" fill="none" />
+                  <circle
+                    id="matchScoreRing"
+                    cx="28"
+                    cy="28"
+                    r="23"
+                    stroke="#10b981"
+                    stroke-width="5"
+                    stroke-linecap="round"
+                    fill="none"
+                    stroke-dasharray="144.5"
+                    stroke-dashoffset="144.5"
+                    style="transition: stroke-dashoffset 0.9s cubic-bezier(0.16, 1, 0.3, 1)"
+                  />
+                </svg>
+                <span id="resultMatchScore" class="absolute font-display font-bold text-sm text-white">0%</span>
+              </div>
+              <div>
+                <div class="text-[11px] font-mono uppercase text-slate-400">Match Score</div>
+                <div id="resultFundingAmount" class="text-xs font-bold text-amber-300 mt-0.5"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Portuguese Reasoning + Nvoip Notification Status -->
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 my-4">
+            <div class="sm:col-span-7 p-3.5 rounded-2xl bg-canopy-950/70 border border-emerald-500/15">
+              <div class="text-[10px] font-mono uppercase tracking-wider text-emerald-400 mb-1">
+                Por que este edital?
+              </div>
+              <p id="resultReasoning" class="text-xs text-slate-200 leading-relaxed"></p>
+            </div>
+
+            <div
+              id="nvoipStatusCard"
+              class="sm:col-span-5 p-3.5 rounded-2xl bg-canopy-950/70 border border-slate-700/70 flex flex-col justify-between"
+            >
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <span class="text-[10px] font-mono uppercase tracking-wider text-amber-300">Alerta Nvoip v3</span>
+                <span id="nvoipBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-full"></span>
+              </div>
+              <p id="nvoipDetail" class="text-[11px] text-slate-300 leading-snug"></p>
+            </div>
+          </div>
+
+          <!-- English Concept Note Viewer -->
+          <div class="mt-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+              <div class="flex items-center gap-2">
+                <i data-lucide="file-text" class="w-4 h-4 text-emerald-400"></i>
+                <h3 class="font-display font-semibold text-sm text-white">
+                  Project Concept Note (Pronta em Inglês)
+                </h3>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  onclick="copyProposal()"
+                  id="copyProposalBtn"
+                  class="inline-flex items-center gap-1.5 text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-canopy-950 px-3 py-1.5 rounded-lg transition cursor-pointer"
+                >
+                  <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                  <span>Copiar Proposta</span>
+                </button>
+                <button
+                  type="button"
+                  onclick="downloadProposal('md')"
+                  class="inline-flex items-center gap-1.5 text-xs font-medium bg-canopy-950 hover:bg-canopy-800 text-slate-200 border border-emerald-500/25 px-3 py-1.5 rounded-lg transition cursor-pointer"
+                >
+                  <i data-lucide="download" class="w-3.5 h-3.5 text-emerald-400"></i>
+                  <span>.md</span>
+                </button>
+                <button
+                  type="button"
+                  onclick="downloadProposal('txt')"
+                  class="inline-flex items-center gap-1.5 text-xs font-medium bg-canopy-950 hover:bg-canopy-800 text-slate-200 border border-emerald-500/25 px-3 py-1.5 rounded-lg transition cursor-pointer"
+                >
+                  <i data-lucide="file-down" class="w-3.5 h-3.5 text-emerald-400"></i>
+                  <span>.txt</span>
+                </button>
+              </div>
+            </div>
+
+            <pre
+              id="proposalOutput"
+              class="proposal-scroll max-h-[420px] overflow-y-auto bg-canopy-950 border border-emerald-500/20 rounded-2xl p-5 text-xs sm:text-[13px] text-slate-200 whitespace-pre-wrap font-mono leading-relaxed"
+            ></pre>
+          </div>
         </div>
 
-        <!-- Card 1 -->
-        <div
-          class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-emerald-500/50 transition"
-        >
-          <div class="flex justify-between items-start gap-4 mb-2">
+        <!-- Grants Radar Section -->
+        <div class="space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <span class="text-xs text-emerald-400 font-medium"
-                >Global Greengrants Fund • EUA</span
-              >
-              <h3 class="text-base font-bold text-white">
-                Coastal Resilience & Mangrove Protection Grant
-              </h3>
+              <h2 class="font-display text-xl font-bold text-white flex items-center gap-2">
+                <i data-lucide="radar" class="w-5 h-5 text-emerald-400"></i>
+                Radar de Editais Internacionais
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">
+                Indexados no Neon PostgreSQL e atualizáveis ao vivo via Firecrawl v2.
+              </p>
             </div>
-            <span
-              class="bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-xs font-bold px-2.5 py-1 rounded-full"
-            >
-              96% Match
-            </span>
-          </div>
-          <p class="text-sm text-slate-400 mb-4">
-            Apoio direto para organizações comunitárias na América Latina
-            focadas em proteção de ecossistemas costeiros e adaptação climática.
-          </p>
-          <div
-            class="flex items-center justify-between pt-3 border-t border-slate-800"
-          >
-            <div class="text-xs text-slate-300">
-              <span class="text-slate-500">Valor:</span>
-              <strong>US$ 25,000</strong> •
-              <span class="text-slate-500">Prazo:</span> 15 Jan 2027
-            </div>
-            <button
-              onclick="
-                openModal('Coastal Resilience & Mangrove Protection Grant')
-              "
-              class="text-xs bg-emerald-500/10 hover:bg-emerald-500 hover:text-slate-950 text-emerald-300 border border-emerald-500/40 font-semibold px-3.5 py-1.5 rounded-lg transition"
-            >
-              ✨ Gerar Proposta em Inglês
-            </button>
-          </div>
-        </div>
 
-        <!-- Card 2 -->
-        <div
-          class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-emerald-500/50 transition"
-        >
-          <div class="flex justify-between items-start gap-4 mb-2">
-            <div>
-              <span class="text-xs text-emerald-400 font-medium"
-                >UNDP Small Grants Programme • ONU</span
-              >
-              <h3 class="text-base font-bold text-white">
-                Community-Based Climate Adaptation Initiative
-              </h3>
-            </div>
-            <span
-              class="bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-xs font-bold px-2.5 py-1 rounded-full"
-            >
-              91% Match
-            </span>
-          </div>
-          <p class="text-sm text-slate-400 mb-4">
-            Financiamento não reembolsável para cooperativas e associações
-            locais implementarem soluções baseadas na natureza e economia
-            circular.
-          </p>
-          <div
-            class="flex items-center justify-between pt-3 border-t border-slate-800"
-          >
-            <div class="text-xs text-slate-300">
-              <span class="text-slate-500">Valor:</span>
-              <strong>US$ 50,000</strong> •
-              <span class="text-slate-500">Prazo:</span> Fluxo Contínuo
-            </div>
             <button
-              onclick="
-                openModal('Community-Based Climate Adaptation Initiative')
-              "
-              class="text-xs bg-emerald-500/10 hover:bg-emerald-500 hover:text-slate-950 text-emerald-300 border border-emerald-500/40 font-semibold px-3.5 py-1.5 rounded-lg transition"
+              type="button"
+              onclick="openIngestModal()"
+              class="inline-flex items-center gap-1.5 text-xs font-semibold bg-canopy-900 hover:bg-emerald-500/15 text-emerald-300 border border-emerald-500/35 px-3.5 py-2 rounded-xl transition cursor-pointer"
             >
-              ✨ Gerar Proposta em Inglês
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              Adicionar Novo Edital via URL (Firecrawl)
             </button>
+          </div>
+
+          <!-- Filter Input -->
+          <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input
+              id="grantFilterInput"
+              type="text"
+              oninput="renderGrants()"
+              placeholder="Filtrar por fundo, bioma, país ou palavra-chave (ex: mangrove, UNDP, Amazon)..."
+              class="w-full bg-canopy-900/80 border border-emerald-500/15 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-400/60 transition"
+            />
+          </div>
+
+          <!-- Grants List Container -->
+          <div id="grantsContainer" class="space-y-3.5">
+            <div class="glass-panel rounded-2xl p-6 text-center text-xs text-slate-400 font-mono">
+              Carregando editais climáticos do Neon PostgreSQL...
+            </div>
           </div>
         </div>
       </section>
     </main>
 
-    <!-- Modal de Proposta -->
+    <!-- Footer -->
+    <footer class="border-t border-emerald-500/10 py-6 text-center text-xs text-slate-500">
+      <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <span>GrantBridge AI • Hack Brasil 2026 (Meio Ambiente &amp; Economia Verde)</span>
+        <span class="font-mono text-[11px] text-slate-500">
+          FastAPI • Neon PostgreSQL • Firecrawl v2 • Gemini 2.5 Flash • Nvoip v3
+        </span>
+      </div>
+    </footer>
+
+    <!-- Modal: Live Firecrawl URL Ingestion -->
     <div
-      id="proposalModal"
-      class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+      id="ingestModal"
+      class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="ingestModalTitle"
     >
-      <div
-        class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-6"
-      >
-        <div class="flex justify-between items-center mb-4">
-          <h3 id="modalTitle" class="font-bold text-emerald-400">
-            Rascunho Técnico Gerado (Inglês)
-          </h3>
+      <div class="glass-panel rounded-3xl max-w-lg w-full p-6 sm:p-7 border border-emerald-500/30 animate-fade-up">
+        <div class="flex items-start justify-between gap-3 mb-4">
+          <div>
+            <span class="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-emerald-300 bg-emerald-500/12 border border-emerald-500/25 px-2.5 py-0.5 rounded-full mb-2">
+              <i data-lucide="flame" class="w-3 h-3"></i> Raspagem ao Vivo • Firecrawl v2
+            </span>
+            <h3 id="ingestModalTitle" class="font-display text-lg font-bold text-white">
+              Adicionar Novo Edital via URL
+            </h3>
+          </div>
           <button
-            onclick="closeModal()"
-            class="text-slate-400 hover:text-white text-sm"
+            type="button"
+            onclick="closeIngestModal()"
+            class="text-slate-400 hover:text-white p-1 rounded-lg transition cursor-pointer"
+            aria-label="Fechar modal"
           >
-            ✕ Fechar
+            <i data-lucide="x" class="w-5 h-5"></i>
           </button>
         </div>
-        <pre
-          class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-slate-300 whitespace-pre-wrap font-mono leading-relaxed mb-4"
-        >
-SUBJECT: Grant Application – Community-Led Coastal & Green Economy Initiative (Bahia, Brazil)
 
-Dear Selection Committee,
+        <p class="text-xs text-slate-300 leading-relaxed mb-4">
+          Cole a URL de qualquer edital ou fundo ambiental internacional. O <strong class="text-white">Firecrawl v2</strong> extrai o conteúdo em Markdown, o <strong class="text-white">Gemini 2.5 Flash</strong> estrutura os metadados e o novo edital entra imediatamente no <strong class="text-white">Neon PostgreSQL</strong>.
+        </p>
 
-We are submitting our proposal on behalf of our local grassroots organization in Salvador, Bahia, Brazil. Our initiative directly addresses climate vulnerability by combining community-led ecosystem restoration with sustainable green income generation.
+        <div class="space-y-3">
+          <div>
+            <label for="ingestUrlInput" class="block text-xs font-medium text-slate-300 mb-1.5">
+              URL do Edital Internacional
+            </label>
+            <input
+              id="ingestUrlInput"
+              type="url"
+              placeholder="https://www.greengrants.org/what-we-do/grants/"
+              class="w-full bg-canopy-950 border border-emerald-500/25 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-400"
+            />
+          </div>
 
-KEY OBJECTIVES:
-1. Restore degraded coastal mangrove buffers protecting vulnerable communities.
-2. Establish measurable carbon and biodiversity monitoring led by local residents.
-3. Ensure 100% of funds directly strengthen local green supply chains.
+          <div
+            id="ingestStatusBox"
+            class="hidden p-3 rounded-xl bg-canopy-950 border border-emerald-500/25 text-xs font-mono text-emerald-300"
+          ></div>
 
-Requested Amount: US$ 25,000 | Duration: 12 Months</pre
-        >
-        <div class="flex justify-end gap-3">
-          <button
-            onclick="closeModal()"
-            class="bg-emerald-500 text-slate-950 font-semibold text-xs px-4 py-2 rounded-lg"
-          >
-            Copiar Texto
-          </button>
+          <div class="flex items-center justify-end gap-2.5 pt-2">
+            <button
+              type="button"
+              onclick="closeIngestModal()"
+              class="text-xs font-medium text-slate-300 hover:text-white px-4 py-2.5 rounded-xl border border-slate-700 hover:border-slate-500 transition cursor-pointer"
+            >
+              Cancelar
+            </button>
+            <button
+              id="ingestSubmitBtn"
+              type="button"
+              onclick="submitIngestUrl()"
+              class="inline-flex items-center gap-2 text-xs font-display font-bold bg-emerald-500 hover:bg-emerald-400 text-canopy-950 px-5 py-2.5 rounded-xl transition cursor-pointer disabled:opacity-60"
+            >
+              <i data-lucide="flame" class="w-3.5 h-3.5"></i>
+              <span id="ingestBtnLabel">Raspar e Indexar Agora</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
     <script>
-      const examples = {
-        1: "Associação comunitária de marisqueiras e pescadores em Salvador (BA) buscando financiamento para restauração de 15 hectares de manguezais e monitoramento ambiental participativo.",
-        2: "Cooperativa de catadores de materiais recicláveis atuando na coleta seletiva solidária e economia circular em bairros periféricos, precisando de equipamentos de triagem.",
-        3: "Iniciativa de agricultura sintrópica e recuperação de nascentes com pequenos produtores rurais no bioma Mata Atlântica/Amazônia.",
+      // =========================================================================
+      // CONFIGURAÇÃO DINÂMICA DA API
+      // Em produção (Vercel), troque pela URL pública do backend no Render/Railway
+      // ou passe ?api=https://seu-backend.onrender.com na URL da página.
+      // =========================================================================
+      const URL_PARAM_API = new URLSearchParams(window.location.search).get("api");
+      const API_BASE_URL = (
+        URL_PARAM_API ||
+        (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+          ? "http://localhost:8000"
+          : "http://localhost:8000")
+      ).replace(/\/+$/, "");
+
+      const EXAMPLES = {
+        1: "Associação comunitária de marisqueiras e pescadores artesanais em Salvador (BA) buscando financiamento para restauração de 18 hectares de manguezais degradados, viveiro comunitário de mudas nativas e monitoramento ambiental participativo com geração de renda verde para 45 famílias.",
+        2: "Cooperativa de catadores e catadoras de materiais recicláveis atuando na coleta seletiva solidária e economia circular em bairros periféricos urbanos do Brasil, precisando de equipamentos de triagem, prensa hidráulica e capacitação para aumentar a taxa de reciclagem e reduzir emissões de metano em aterros.",
+        3: "Iniciativa comunitária de agrofloresta, sistemas agroflorestais sintrópicos e bioeconomia de floresta em pé na Amazônia brasileira, reunindo 60 pequenos produtores rurais e lideranças locais na recuperação de nascentes e cadeias sustentáveis de açaí, cacau nativo e castanha.",
       };
+
+      const FALLBACK_GRANTS = [
+        {
+          id: 1,
+          title: "Grassroots Environmental Justice & Coastal Resilience Grant",
+          organization: "Global Greengrants Fund",
+          country: "United States (Global / Latin America)",
+          funding_amount: "US$ 5,000 – US$ 25,000",
+          deadline: "Rolling (Quarterly Advisory Cycles)",
+          description:
+            "Direct, flexible funding for grassroots community groups, artisanal fishers, and local NGOs in Latin America working on coastal ecosystem restoration, mangrove conservation, climate adaptation, and environmental justice.",
+          source_url: "https://www.greengrants.org/what-we-do/grants/",
+        },
+        {
+          id: 2,
+          title: "Community-Based Climate Adaptation & Circular Economy Programme",
+          organization: "UNDP GEF Small Grants Programme",
+          country: "United Nations (Brazil Country Programme)",
+          funding_amount: "Up to US$ 50,000",
+          deadline: "Rolling / Annual Calls",
+          description:
+            "Non-reimbursable financial and technical support directly to civil society organizations, waste-picker cooperatives, and rural associations in Brazil for biodiversity conservation, sustainable land management, and circular economy.",
+          source_url: "https://sgp.undp.org/",
+        },
+        {
+          id: 3,
+          title: "Frontline Communities & Indigenous Climate Leadership Fund",
+          organization: "Climate Justice Resilience Fund",
+          country: "United States (Global South Focus)",
+          funding_amount: "US$ 50,000 – US$ 250,000",
+          deadline: "Periodic Open Calls",
+          description:
+            "Supports women, youth, and Indigenous Peoples on the frontlines of the climate crisis to design and scale community-led climate resilience, agroecology, and adaptive livelihoods in vulnerable biomes.",
+          source_url: "https://www.cjrfund.org/",
+        },
+        {
+          id: 4,
+          title: "Rufford Small Grants for Nature Conservation",
+          organization: "The Rufford Foundation",
+          country: "United Kingdom (Developing Countries)",
+          funding_amount: "£6,000 – £15,000 (~US$ 19,000)",
+          deadline: "Rolling (Year-round Applications)",
+          description:
+            "Small grants for early-stage and community-based nature conservation projects in developing countries, including Atlantic Forest and Amazon biodiversity monitoring, native species recovery, and environmental education.",
+          source_url: "https://www.rufford.org/grants/",
+        },
+        {
+          id: 5,
+          title: "Action Fund for Threatened Tropical Forest & Bioeconomy Conservation",
+          organization: "Rainforest Trust",
+          country: "United States (Tropical Regions / Amazon)",
+          funding_amount: "US$ 25,000 – US$ 150,000",
+          deadline: "Quarterly Review Cycles",
+          description:
+            "Partners with local conservation NGOs and Indigenous associations in the Amazon and Atlantic Forest to establish protected areas, halt deforestation, and foster sustainable agroforestry and standing-forest bioeconomy.",
+          source_url: "https://www.rainforesttrust.org/our-work/conservation-action-fund/",
+        },
+        {
+          id: 6,
+          title: "Marine Protected Areas & Coastal Livelihoods Grant",
+          organization: "Blue Action Fund",
+          country: "Germany (Global Tropical Coasts)",
+          funding_amount: "€200,000 – €1,500,000",
+          deadline: "Periodic Thematic Calls",
+          description:
+            "Co-finances NGO-led marine and coastal conservation projects that strengthen marine protected areas, restore mangroves and coral reefs, and improve sustainable livelihoods for coastal fishing communities.",
+          source_url: "https://www.blueactionfund.org/",
+        },
+      ];
+
+      let grantsState = [];
+      let backendOnline = false;
+      let lastProposalText = "";
+      let lastProposalGrantTitle = "grantbridge-proposal";
+
+      function escapeHtml(str) {
+        return String(str ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function safeHref(url) {
+        try {
+          const parsed = new URL(url);
+          if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+            return parsed.href;
+          }
+        } catch {
+          // ignore invalid URLs
+        }
+        return "#";
+      }
+
       function setExample(id) {
-        document.getElementById("ongInput").value = examples[id];
+        const input = document.getElementById("ongInput");
+        input.value = EXAMPLES[id] || "";
+        input.focus();
       }
-      function searchGrants() {
-        document.getElementById("statusLog").classList.remove("hidden");
+
+      function updateApiStatus(online, detailText) {
+        backendOnline = online;
+        const dot = document.getElementById("apiStatusDot");
+        const label = document.getElementById("apiStatusLabel");
+        const banner = document.getElementById("offlineBanner");
+        const offlineUrlText = document.getElementById("offlineUrlText");
+
+        if (online) {
+          dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+          label.textContent = detailText || "API Online";
+          banner.classList.add("hidden");
+        } else {
+          dot.className = "w-2 h-2 rounded-full bg-amber-400";
+          label.textContent = "Modo Demo Offline";
+          offlineUrlText.textContent = API_BASE_URL;
+          banner.classList.remove("hidden");
+        }
       }
-      function openModal(title) {
-        document.getElementById("modalTitle").innerText = "Proposta: " + title;
-        document.getElementById("proposalModal").classList.remove("hidden");
+
+      function setHealthBadge(elId, isReady, customText) {
+        const el = document.getElementById(elId);
+        if (!el) return;
+        el.textContent = customText;
+        el.className = isReady
+          ? "font-mono text-[11px] text-emerald-400"
+          : "font-mono text-[11px] text-amber-300";
       }
-      function closeModal() {
-        document.getElementById("proposalModal").classList.add("hidden");
+
+      async function checkHealth() {
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/health`, {
+            signal: AbortSignal.timeout(5000),
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          const integ = data.integrations || {};
+
+          const neonOk = Boolean(integ.neon_postgresql?.connected);
+          setHealthBadge("healthNeon", neonOk, neonOk ? "Conectado" : "Fallback Local");
+          setHealthBadge(
+            "healthFirecrawl",
+            Boolean(integ.firecrawl_v2?.configured),
+            integ.firecrawl_v2?.configured ? "Pronto" : "Sem chave"
+          );
+          setHealthBadge(
+            "healthGemini",
+            Boolean(integ.gemini_ai?.configured),
+            integ.gemini_ai?.configured ? "2.5 Flash" : "Fallback"
+          );
+          setHealthBadge(
+            "healthNvoip",
+            Boolean(integ.nvoip_v3?.configured),
+            integ.nvoip_v3?.configured ? "Ativo" : "Sem chave"
+          );
+
+          updateApiStatus(true, neonOk ? "Neon DB Conectado" : "API Online");
+          return true;
+        } catch {
+          updateApiStatus(false);
+          setHealthBadge("healthNeon", false, "Offline");
+          setHealthBadge("healthFirecrawl", false, "Offline");
+          setHealthBadge("healthGemini", false, "Offline");
+          setHealthBadge("healthNvoip", false, "Offline");
+          return false;
+        }
       }
+
+      async function loadGrants() {
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/grants`, {
+            signal: AbortSignal.timeout(6000),
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          grantsState = Array.isArray(data.grants) ? data.grants : [];
+          updateApiStatus(true, "API & Neon Ativos");
+        } catch {
+          grantsState = [...FALLBACK_GRANTS];
+          updateApiStatus(false);
+        }
+        document.getElementById("metricGrantsCount").textContent = String(grantsState.length);
+        renderGrants();
+      }
+
+      function renderGrants(highlightGrantId = null) {
+        const container = document.getElementById("grantsContainer");
+        const query = (document.getElementById("grantFilterInput")?.value || "").trim().toLowerCase();
+
+        const filtered = grantsState.filter((g) => {
+          if (!query) return true;
+          const haystack = `${g.title} ${g.organization} ${g.country} ${g.description} ${g.funding_amount}`.toLowerCase();
+          return haystack.includes(query);
+        });
+
+        if (filtered.length === 0) {
+          container.innerHTML = `
+            <div class="glass-panel rounded-2xl p-6 text-center text-xs text-slate-400">
+              Nenhum edital encontrado para "${escapeHtml(query)}".
+            </div>`;
+          return;
+        }
+
+        container.innerHTML = filtered
+          .map((g) => {
+            const isWinner = highlightGrantId && g.id === highlightGrantId;
+            return `
+              <article class="grant-card rounded-2xl p-5 ${isWinner ? "border-emerald-400/70 ring-1 ring-emerald-400/35" : ""}">
+                <div class="flex flex-wrap items-start justify-between gap-3 mb-2">
+                  <div>
+                    <div class="flex flex-wrap items-center gap-2 text-[11px] font-medium text-emerald-400">
+                      <span>${escapeHtml(g.organization)}</span>
+                      <span class="text-slate-600">•</span>
+                      <span class="text-slate-400">${escapeHtml(g.country)}</span>
+                    </div>
+                    <h3 class="font-display text-base font-bold text-white mt-0.5 leading-snug">
+                      ${escapeHtml(g.title)}
+                    </h3>
+                  </div>
+                  ${
+                    isWinner
+                      ? `<span class="text-[11px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-2.5 py-1 rounded-full">★ Melhor Match</span>`
+                      : `<span class="text-[11px] font-mono bg-amber-500/12 text-amber-300 border border-amber-500/25 px-2.5 py-1 rounded-full shrink-0">${escapeHtml(g.funding_amount)}</span>`
+                  }
+                </div>
+
+                <p class="text-xs sm:text-sm text-slate-300/85 leading-relaxed mb-4">
+                  ${escapeHtml(g.description)}
+                </p>
+
+                <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-emerald-500/10 text-xs">
+                  <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-slate-300">
+                    <span><span class="text-slate-500">Valor:</span> <strong class="text-white">${escapeHtml(g.funding_amount)}</strong></span>
+                    <span><span class="text-slate-500">Prazo:</span> ${escapeHtml(g.deadline)}</span>
+                  </div>
+                  <a
+                    href="${safeHref(g.source_url)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-1 text-emerald-300 hover:text-emerald-200 font-medium transition"
+                  >
+                    <span>Portal Oficial</span>
+                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                  </a>
+                </div>
+              </article>
+            `;
+          })
+          .join("");
+
+        lucide.createIcons();
+      }
+
+      function appendLog(line) {
+        const box = document.getElementById("pipelineLog");
+        box.classList.remove("hidden");
+        const p = document.createElement("div");
+        p.textContent = `> ${line}`;
+        box.appendChild(p);
+      }
+
+      function resetLog() {
+        const box = document.getElementById("pipelineLog");
+        box.innerHTML = "";
+        box.classList.add("hidden");
+      }
+
+      function buildOfflineMatch(profile, phone) {
+        const p = profile.toLowerCase();
+        let best = grantsState[0] || FALLBACK_GRANTS[0];
+        let score = 88;
+        if (p.includes("recicla") || p.includes("catador") || p.includes("circular")) {
+          best = grantsState.find((g) => g.organization.includes("UNDP")) || best;
+          score = 94;
+        } else if (p.includes("amazôn") || p.includes("agroflorest") || p.includes("floresta")) {
+          best = grantsState.find((g) => g.organization.includes("Rainforest")) || best;
+          score = 95;
+        } else if (p.includes("mangue") || p.includes("costeir") || p.includes("pesca")) {
+          best = grantsState.find((g) => g.organization.includes("Greengrants")) || best;
+          score = 96;
+        }
+
+        const proposal = `# PROJECT CONCEPT NOTE
+**Target Fund:** ${best.title} (${best.organization})
+**Funding Range:** ${best.funding_amount}
+**Applicant Country:** Brazil
+
+## 1. Executive Summary
+We submit this Project Concept Note on behalf of a Brazilian grassroots environmental organization seeking catalytic support from ${best.organization}. Building on our local profile ("${profile.slice(0, 220)}"), this 12-month initiative combines community-led ecosystem restoration, participatory monitoring, and inclusive green income generation.
+
+## 2. Local Environmental Impact in Brazil
+- Direct restoration and protection of vulnerable Brazilian ecosystems led by local residents and traditional communities.
+- Measurable biodiversity recovery, carbon co-benefits, and reduced climate vulnerability for frontline families.
+- Strengthening of local green value chains and community governance structures.
+
+## 3. Alignment with Donor Goals
+This proposal directly advances the mission of **${best.title}** (${best.organization}): ${best.description} Resources flow directly to local implementers, maximizing transparency, ecological resilience, and long-term community ownership.
+
+## 4. Budget Breakdown (12-Month Indicative Plan)
+- **Field Restoration & Green Equipment (45%):** Native inputs, restoration materials, and community operational equipment.
+- **Community Training & Local Leadership (30%):** Technical workshops, local stipends, and cooperative governance.
+- **Participatory Monitoring & Reporting (15%):** Baseline diagnostics, impact indicators, and donor reporting.
+- **Administration & Financial Transparency (10%):** Accounting, compliance, and safeguarding.
+
+## 5. UN Sustainable Development Goals (UN SDGs)
+- **SDG 13 (Climate Action):** Community-driven adaptation and mitigation.
+- **SDG 14 / SDG 15 (Life Below Water & Life on Land):** Ecosystem conservation and biodiversity protection.
+- **SDG 1 & SDG 8 (No Poverty & Decent Work):** Sustainable green livelihoods for local communities.
+- **SDG 17 (Partnerships for the Goals):** Bridging global climate finance with Brazilian grassroots leadership.`;
+
+        return {
+          match_score: score,
+          match_reasoning_pt: `Alta compatibilidade temática entre a iniciativa brasileira descrita e os critérios de financiamento do ${best.organization} (simulado em modo offline).`,
+          ai_mode: "offline-demo",
+          matched_grant: best,
+          generated_proposal_en: proposal,
+          notification: {
+            status: phone ? "demo_fallback_zero_balance" : "skipped",
+            phone: phone || "",
+            detail: phone
+              ? "Modo offline: conecte o backend FastAPI com NVOIP_API_KEY para disparar via Nvoip v3."
+              : "Nenhum telefone informado.",
+          },
+        };
+      }
+
+      async function runMatch() {
+        const profile = document.getElementById("ongInput").value.trim();
+        const phone = document.getElementById("phoneInput").value.trim();
+        const btn = document.getElementById("matchBtn");
+        const btnLabel = document.getElementById("matchBtnLabel");
+
+        if (profile.length < 15) {
+          alert("Descreva a iniciativa ambiental com pelo menos 15 caracteres (ou use um dos exemplos rápidos).");
+          document.getElementById("ongInput").focus();
+          return;
+        }
+
+        btn.disabled = true;
+        btnLabel.textContent = "Analisando editais e redigindo proposta...";
+        resetLog();
+        appendLog("Carregando editais climáticos indexados no Neon PostgreSQL...");
+        appendLog("Executando motor de Match Score com Gemini 2.5 Flash...");
+        if (phone) appendLog(`Preparando disparo de alerta via Nvoip v3 para ${phone}...`);
+
+        let result;
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/match`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ong_profile: profile,
+              whatsapp_phone: phone,
+            }),
+          });
+          if (!res.ok) {
+            const errBody = await res.json().catch(() => ({}));
+            throw new Error(errBody.detail || `Erro HTTP ${res.status}`);
+          }
+          result = await res.json();
+          updateApiStatus(true, "API Online");
+          appendLog(`Match concluído (${result.match_score}%)! Proposta salva no Neon DB.`);
+        } catch (err) {
+          appendLog(`Backend indisponível (${err.message}). Ativando modo demonstração offline...`);
+          result = buildOfflineMatch(profile, phone);
+          updateApiStatus(false);
+        } finally {
+          btn.disabled = false;
+          btnLabel.textContent = "Calcular Match + Redigir Proposta em Inglês";
+        }
+
+        displayMatchResult(result);
+      }
+
+      function displayMatchResult(data) {
+        const section = document.getElementById("matchResultSection");
+        const grant = data.matched_grant;
+        const score = Math.max(0, Math.min(100, Number(data.match_score || 0)));
+
+        document.getElementById("resultGrantTitle").textContent = grant.title;
+        document.getElementById("resultGrantMeta").textContent = `${grant.organization} • ${grant.country} • Prazo: ${grant.deadline}`;
+        document.getElementById("resultFundingAmount").textContent = grant.funding_amount;
+        document.getElementById("resultMatchScore").textContent = `${score}%`;
+        document.getElementById("resultReasoning").textContent =
+          data.match_reasoning_pt || "Compatibilidade calculada com sucesso.";
+        document.getElementById("resultAiBadge").textContent = `Motor: ${data.ai_mode || "gemini-2.5-flash"}`;
+
+        // Animate SVG ring
+        const circumference = 2 * Math.PI * 23; // ~144.51
+        const offset = circumference - (score / 100) * circumference;
+        const ring = document.getElementById("matchScoreRing");
+        ring.style.strokeDashoffset = String(circumference);
+        requestAnimationFrame(() => {
+          ring.style.strokeDashoffset = String(offset);
+        });
+
+        // Nvoip status badge
+        const notif = data.notification || { status: "skipped", detail: "Sem telefone informado." };
+        const nvoipBadge = document.getElementById("nvoipBadge");
+        const nvoipDetail = document.getElementById("nvoipDetail");
+        nvoipDetail.textContent = notif.detail || "";
+
+        if (notif.status === "sent") {
+          nvoipBadge.textContent = "ENVIADO";
+          nvoipBadge.className = "text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/35";
+        } else if (notif.status === "skipped") {
+          nvoipBadge.textContent = "OPCIONAL";
+          nvoipBadge.className = "text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700";
+        } else {
+          nvoipBadge.textContent = "FALLBACK DEMO";
+          nvoipBadge.className = "text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30";
+        }
+
+        lastProposalText = data.generated_proposal_en || "";
+        lastProposalGrantTitle = (grant.title || "grantbridge-proposal")
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "");
+        document.getElementById("proposalOutput").textContent = lastProposalText;
+
+        section.classList.remove("hidden");
+        renderGrants(grant.id);
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+        lucide.createIcons();
+      }
+
+      async function copyProposal() {
+        if (!lastProposalText) return;
+        const btn = document.getElementById("copyProposalBtn");
+        try {
+          await navigator.clipboard.writeText(lastProposalText);
+          const original = btn.innerHTML;
+          btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i><span>Copiado!</span>`;
+          lucide.createIcons();
+          setTimeout(() => {
+            btn.innerHTML = original;
+            lucide.createIcons();
+          }, 2000);
+        } catch {
+          alert("Não foi possível copiar automaticamente. Selecione o texto manualmente.");
+        }
+      }
+
+      function downloadProposal(ext) {
+        if (!lastProposalText) return;
+        const mime = ext === "md" ? "text/markdown;charset=utf-8" : "text/plain;charset=utf-8";
+        const blob = new Blob([lastProposalText], { type: mime });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `GrantBridge-Proposal-${lastProposalGrantTitle}.${ext}`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      // -------------------------------------------------------------------------
+      // Firecrawl Live URL Ingestion Modal
+      // -------------------------------------------------------------------------
+      function openIngestModal() {
+        document.getElementById("ingestModal").classList.remove("hidden");
+        document.getElementById("ingestStatusBox").classList.add("hidden");
+        document.getElementById("ingestUrlInput").focus();
+      }
+
+      function closeIngestModal() {
+        document.getElementById("ingestModal").classList.add("hidden");
+      }
+
+      async function submitIngestUrl() {
+        const urlInput = document.getElementById("ingestUrlInput");
+        const statusBox = document.getElementById("ingestStatusBox");
+        const submitBtn = document.getElementById("ingestSubmitBtn");
+        const btnLabel = document.getElementById("ingestBtnLabel");
+        const url = urlInput.value.trim();
+
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+          statusBox.textContent = "Informe uma URL válida começando com https:// ou http://";
+          statusBox.className = "p-3 rounded-xl bg-red-950/60 border border-red-500/35 text-xs font-mono text-red-300";
+          statusBox.classList.remove("hidden");
+          return;
+        }
+
+        submitBtn.disabled = true;
+        btnLabel.textContent = "Raspando via Firecrawl v2...";
+        statusBox.className = "p-3 rounded-xl bg-canopy-950 border border-emerald-500/25 text-xs font-mono text-emerald-300";
+        statusBox.textContent = "> Conectando ao Firecrawl v2 e estruturando metadados com Gemini 2.5 Flash...";
+        statusBox.classList.remove("hidden");
+
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/ingest-url`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            throw new Error(data.detail || `Erro HTTP ${res.status}`);
+          }
+
+          statusBox.textContent = `> Sucesso! "${data.grant.title}" salvo no Neon PostgreSQL.`;
+          urlInput.value = "";
+          await loadGrants();
+          setTimeout(() => closeIngestModal(), 1100);
+        } catch (err) {
+          statusBox.className = "p-3 rounded-xl bg-amber-950/50 border border-amber-500/35 text-xs font-mono text-amber-200";
+          statusBox.textContent = `> Falha na ingestão: ${err.message}. Verifique se o backend está online com FIRECRAWL_API_KEY e GEMINI_API_KEY configuradas.`;
+        } finally {
+          submitBtn.disabled = false;
+          btnLabel.textContent = "Raspar e Indexar Agora";
+        }
+      }
+
+      // Close modal on Escape
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeIngestModal();
+      });
+
+      async function bootstrapApp() {
+        lucide.createIcons();
+        await Promise.all([checkHealth(), loadGrants()]);
+      }
+
+      bootstrapApp();
     </script>
   </body>
 </html>
