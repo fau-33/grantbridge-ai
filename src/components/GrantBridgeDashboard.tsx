@@ -436,10 +436,11 @@ export function GrantBridgeDashboard() {
   }
 
   function renderPresetIcon(icon: "waves" | "recycle" | "trees") {
-    if (icon === "waves") return <Waves className="w-4 h-4 text-[#57DCA0]" />;
+    if (icon === "waves")
+      return <Waves className="w-4 h-4 text-[#57DCA0] shrink-0" />;
     if (icon === "recycle")
-      return <Recycle className="w-4 h-4 text-[#57DCA0]" />;
-    return <Trees className="w-4 h-4 text-[#57DCA0]" />;
+      return <Recycle className="w-4 h-4 text-[#57DCA0] shrink-0" />;
+    return <Trees className="w-4 h-4 text-[#57DCA0] shrink-0" />;
   }
 
   function renderStatusDot(state: ServiceState) {
@@ -484,37 +485,39 @@ export function GrantBridgeDashboard() {
     };
   }
 
+  const isRefreshing = healthLoading || grantsLoading;
+
   return (
-    <div className="min-h-screen flex flex-col bg-[#050B08] text-[#F3F7F4]">
+    <div className="min-h-screen w-full overflow-x-hidden flex flex-col bg-[#050B08] text-[#F3F7F4]">
       {/* Sticky Top Header */}
-      <header className="sticky top-0 z-30 border-b border-[#1A2F24] bg-[#050B08]/90 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-[#1A2F24] bg-[#050B08]/92 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
           {/* Brand Logo */}
-          <div className="flex items-center gap-3">
-            <BrandMark />
-            <div>
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <BrandMark className="w-9 h-9 sm:w-10 sm:h-10" />
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-display font-bold text-lg tracking-tight text-[#F3F7F4]">
+                <span className="font-display font-bold text-base sm:text-lg tracking-tight text-[#F3F7F4] whitespace-nowrap">
                   GrantBridge{" "}
                   <span className="text-[#57DCA0]">AI</span>
                 </span>
-                <span className="hidden sm:inline-flex items-center font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#0B1611] border border-[#1A2F24] text-[#57DCA0]">
+                <span className="hidden md:inline-flex items-center font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#0B1611] border border-[#1A2F24] text-[#57DCA0] whitespace-nowrap">
                   Hack Brasil 2026
                 </span>
               </div>
-              <p className="text-[11px] text-[#8EA396] hidden sm:block">
+              <p className="text-[11px] text-[#8EA396] hidden sm:block truncate">
                 Meio Ambiente &amp; Economia Verde
               </p>
             </div>
           </div>
 
-          {/* User-Oriented Live Status Indicators (backed by GET /api/health) */}
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Actions + Desktop Status Pills */}
+          <div className="flex items-center gap-2 shrink-0">
             <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#0B1611] border border-[#1A2F24]">
               {serviceStatuses.map((item) => (
                 <div
                   key={item.key}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-[#050B08]/80 border border-[#1A2F24]/80 text-[11px] font-medium"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-[#050B08]/80 border border-[#1A2F24]/80 text-[11px] font-medium whitespace-nowrap"
                 >
                   {renderStatusDot(item.state)}
                   <span
@@ -532,61 +535,64 @@ export function GrantBridgeDashboard() {
               ))}
             </div>
 
+            {/* Compact Icon-Only Reload Button */}
             <button
               type="button"
               onClick={() => void fetchAllInitialData()}
-              disabled={healthLoading || grantsLoading}
-              title="Atualizar status e oportunidades"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-[#8EA396] hover:text-[#F3F7F4] bg-[#0B1611] border border-[#1A2F24] hover:border-[#20BD80]/50 px-3 py-2 rounded-xl transition cursor-pointer disabled:opacity-50"
+              disabled={isRefreshing}
+              title="Atualizar dados do radar"
+              aria-label="Atualizar dados do radar"
+              className="w-10 h-10 inline-flex items-center justify-center rounded-xl bg-[#0B1611] border border-[#1A2F24] hover:border-[#20BD80]/55 text-[#8EA396] hover:text-[#57DCA0] transition cursor-pointer disabled:opacity-50 shrink-0"
             >
               <RefreshCw
-                className={`w-3.5 h-3.5 ${healthLoading || grantsLoading ? "animate-spin text-[#57DCA0]" : ""}`}
+                className={`w-4 h-4 transition-transform ${isRefreshing ? "animate-spin text-[#57DCA0]" : ""}`}
               />
-              <span className="hidden sm:inline">Atualizar</span>
             </button>
 
             <button
               type="button"
               onClick={() => setIngestModalOpen(true)}
-              className="inline-flex items-center gap-1.5 text-xs font-display font-bold bg-[#20BD80] hover:bg-[#29D18F] text-[#050B08] px-3.5 py-2 rounded-xl transition cursor-pointer shadow-[0_8px_24px_-10px_rgba(32,189,128,0.65)]"
+              className="min-h-[40px] inline-flex items-center gap-1.5 text-xs font-display font-bold bg-[#20BD80] hover:bg-[#29D18F] text-[#050B08] px-3 sm:px-4 py-2 rounded-xl transition cursor-pointer shadow-[0_8px_24px_-10px_rgba(32,189,128,0.65)] whitespace-nowrap"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-3.5 h-3.5 shrink-0" />
               <span>Adicionar Edital</span>
             </button>
           </div>
         </div>
 
-        {/* Compact Status Indicators on Mobile/Tablet */}
-        <div className="xl:hidden border-t border-[#1A2F24]/70 px-4 sm:px-6 py-2 flex items-center gap-2 overflow-x-auto gb-scroll">
-          {serviceStatuses.map((item) => (
-            <div
-              key={item.key}
-              className="inline-flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-lg bg-[#0B1611] border border-[#1A2F24] text-[11px] font-medium"
-            >
-              {renderStatusDot(item.state)}
-              <span
-                className={
-                  item.state === "online"
-                    ? "text-[#F3F7F4]"
-                    : item.state === "warning" || item.state === "loading"
-                      ? "text-[#E7BD71]"
-                      : "text-red-300"
-                }
+        {/* Compact Status Pills on Mobile / Tablet */}
+        <div className="xl:hidden border-t border-[#1A2F24]/70 px-4 sm:px-6 py-2">
+          <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-1.5">
+            {serviceStatuses.map((item) => (
+              <div
+                key={item.key}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#0B1611] border border-[#1A2F24] text-[11px] font-medium whitespace-nowrap"
               >
-                {item.label}
-              </span>
-            </div>
-          ))}
+                {renderStatusDot(item.state)}
+                <span
+                  className={
+                    item.state === "online"
+                      ? "text-[#F3F7F4]"
+                      : item.state === "warning" || item.state === "loading"
+                        ? "text-[#E7BD71]"
+                        : "text-red-300"
+                  }
+                >
+                  {item.label}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </header>
 
       {/* Friendly Cold-Start Banner (> 4s on initial load) */}
       {initialColdStart && (
         <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4">
-          <div className="rounded-2xl bg-[#0B1611] border border-[#E7BD71]/40 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2.5 text-[#E7BD71]">
-              <Clock className="w-4 h-4 shrink-0 animate-pulse" />
-              <span>
+          <div className="rounded-2xl bg-[#0B1611] border border-[#E7BD71]/40 px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div className="flex items-start sm:items-center gap-2.5 text-[#E7BD71] min-w-0 flex-1">
+              <Clock className="w-4 h-4 shrink-0 animate-pulse mt-0.5 sm:mt-0" />
+              <span className="break-words">
                 <strong className="text-[#F3F7F4]">
                   Iniciando o servidor da plataforma...
                 </strong>{" "}
@@ -605,9 +611,9 @@ export function GrantBridgeDashboard() {
       {!healthLoading && healthError && (
         <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4">
           <div className="rounded-2xl bg-red-950/35 border border-red-500/35 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-xs text-red-200">
-            <div className="flex items-center gap-2.5">
-              <WifiOff className="w-4 h-4 text-red-400 shrink-0" />
-              <span>
+            <div className="flex items-start sm:items-center gap-2.5 min-w-0 flex-1">
+              <WifiOff className="w-4 h-4 text-red-400 shrink-0 mt-0.5 sm:mt-0" />
+              <span className="break-words">
                 <strong>Plataforma temporariamente indisponível:</strong>{" "}
                 {healthError}
               </span>
@@ -615,7 +621,7 @@ export function GrantBridgeDashboard() {
             <button
               type="button"
               onClick={() => void fetchAllInitialData()}
-              className="font-mono text-[11px] underline text-red-100 hover:text-white cursor-pointer"
+              className="font-mono text-[11px] underline text-red-100 hover:text-white cursor-pointer shrink-0"
             >
               Tentar novamente
             </button>
@@ -623,17 +629,19 @@ export function GrantBridgeDashboard() {
         </div>
       )}
 
-      {/* Hero Section with Vector Globe SVG */}
-      <section className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6">
-        <div className="gb-card rounded-3xl p-6 sm:p-8 lg:p-10 relative overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-7 space-y-5">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#050B08] border border-[#1A2F24] text-[11px] font-mono text-[#57DCA0]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#20BD80]" />
-                <span>Ponte Inteligente • Financiamento Climático Global</span>
+      {/* Hero Section with Responsive Vector Globe SVG */}
+      <section className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-5 sm:pt-8 pb-6">
+        <div className="gb-card rounded-3xl p-4 sm:p-6 lg:p-10 relative overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
+            <div className="lg:col-span-7 space-y-4 sm:space-y-5 min-w-0">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#050B08] border border-[#1A2F24] text-[11px] font-mono text-[#57DCA0] max-w-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#20BD80] shrink-0" />
+                <span className="truncate">
+                  Ponte Inteligente • Financiamento Climático Global
+                </span>
               </div>
 
-              <h1 className="font-display text-3xl sm:text-4xl lg:text-[2.75rem] font-bold tracking-tight leading-[1.1] text-[#F3F7F4]">
+              <h1 className="font-display text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.12] text-[#F3F7F4] break-words">
                 Conecte iniciativas ambientais brasileiras a{" "}
                 <span className="text-[#57DCA0]">
                   fundos climáticos internacionais.
@@ -647,61 +655,82 @@ export function GrantBridgeDashboard() {
                 direto no seu celular.
               </p>
 
-              {/* Telemetry Strip */}
-              <div className="grid grid-cols-3 gap-3 pt-2">
-                <div className="rounded-2xl bg-[#050B08]/90 border border-[#1A2F24] p-3.5">
-                  <div className="flex items-center justify-between text-[#57DCA0] mb-1.5">
-                    <Globe2 className="w-4 h-4" />
-                    <span className="font-mono text-[10px] uppercase text-[#8EA396]">
-                      Radar
-                    </span>
+              {/* 3 KPIs — Stacked 1-col on mobile, 3-col on sm+ */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                <div className="rounded-2xl bg-[#050B08]/90 border border-[#1A2F24] p-3.5 sm:p-4 flex sm:block items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2 text-[#57DCA0] sm:justify-between sm:mb-1.5">
+                      <Globe2 className="w-4 h-4 shrink-0" />
+                      <span className="font-mono text-[10px] uppercase text-[#8EA396]">
+                        Radar
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#8EA396] mt-0.5 sm:hidden">
+                      Editais Ativos
+                    </p>
                   </div>
-                  <div className="font-display text-2xl sm:text-3xl font-bold text-[#F3F7F4]">
-                    {grantsLoading ? (
-                      <span className="text-[#8EA396]">—</span>
-                    ) : (
-                      grants.length
-                    )}
+                  <div className="text-right sm:text-left">
+                    <div className="font-display text-2xl sm:text-3xl font-bold text-[#F3F7F4]">
+                      {grantsLoading ? (
+                        <span className="text-[#8EA396]">—</span>
+                      ) : (
+                        grants.length
+                      )}
+                    </div>
+                    <p className="text-[11px] text-[#8EA396] mt-0.5 hidden sm:block">
+                      Editais Ativos
+                    </p>
                   </div>
-                  <p className="text-[11px] text-[#8EA396] mt-0.5">
-                    Editais Ativos
-                  </p>
                 </div>
 
-                <div className="rounded-2xl bg-[#050B08]/90 border border-[#1A2F24] p-3.5">
-                  <div className="flex items-center justify-between text-[#E7BD71] mb-1.5">
-                    <Sparkles className="w-4 h-4" />
-                    <span className="font-mono text-[10px] uppercase text-[#8EA396]">
-                      Idioma
-                    </span>
+                <div className="rounded-2xl bg-[#050B08]/90 border border-[#1A2F24] p-3.5 sm:p-4 flex sm:block items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2 text-[#E7BD71] sm:justify-between sm:mb-1.5">
+                      <Sparkles className="w-4 h-4 shrink-0" />
+                      <span className="font-mono text-[10px] uppercase text-[#8EA396]">
+                        Idioma
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#8EA396] mt-0.5 sm:hidden">
+                      Proposta Pronta
+                    </p>
                   </div>
-                  <div className="font-display text-2xl sm:text-3xl font-bold text-[#E7BD71]">
-                    PT→EN
+                  <div className="text-right sm:text-left">
+                    <div className="font-display text-2xl sm:text-3xl font-bold text-[#E7BD71]">
+                      PT→EN
+                    </div>
+                    <p className="text-[11px] text-[#8EA396] mt-0.5 hidden sm:block">
+                      Proposta Pronta
+                    </p>
                   </div>
-                  <p className="text-[11px] text-[#8EA396] mt-0.5">
-                    Proposta Pronta
-                  </p>
                 </div>
 
-                <div className="rounded-2xl bg-[#050B08]/90 border border-[#1A2F24] p-3.5">
-                  <div className="flex items-center justify-between text-[#57DCA0] mb-1.5">
-                    <MessageSquare className="w-4 h-4" />
-                    <span className="font-mono text-[10px] uppercase text-[#8EA396]">
-                      Celular
-                    </span>
+                <div className="rounded-2xl bg-[#050B08]/90 border border-[#1A2F24] p-3.5 sm:p-4 flex sm:block items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2 text-[#57DCA0] sm:justify-between sm:mb-1.5">
+                      <MessageSquare className="w-4 h-4 shrink-0" />
+                      <span className="font-mono text-[10px] uppercase text-[#8EA396]">
+                        Celular
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#8EA396] mt-0.5 sm:hidden">
+                      Alerta Direto
+                    </p>
                   </div>
-                  <div className="font-display text-2xl sm:text-3xl font-bold text-[#57DCA0]">
-                    SMS
+                  <div className="text-right sm:text-left">
+                    <div className="font-display text-2xl sm:text-3xl font-bold text-[#57DCA0]">
+                      SMS
+                    </div>
+                    <p className="text-[11px] text-[#8EA396] mt-0.5 hidden sm:block">
+                      Alerta Direto
+                    </p>
                   </div>
-                  <p className="text-[11px] text-[#8EA396] mt-0.5">
-                    Alerta Direto
-                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Vector Globe SVG */}
-            <div className="lg:col-span-5 flex items-center justify-center">
+            {/* Vector Globe SVG — Compact on Mobile */}
+            <div className="lg:col-span-5 flex items-center justify-center py-1 sm:py-2">
               <BrazilGlobeSvg
                 activeGrantsCount={grantsLoading ? null : grants.length}
               />
@@ -710,331 +739,392 @@ export function GrantBridgeDashboard() {
         </div>
       </section>
 
-      {/* Main Workspace */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pb-16 grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
-        {/* Left Column: NGO Diagnosis & Match Form */}
-        <section className="lg:col-span-5 space-y-6">
-          <div className="gb-card rounded-3xl p-6 sm:p-7">
-            <div className="flex items-center justify-between gap-2 mb-1.5">
-              <h2 className="font-display text-xl font-bold text-[#F3F7F4] flex items-center gap-2">
-                <Compass className="w-5 h-5 text-[#57DCA0]" />
-                Diagnóstico da Organização
-              </h2>
-              <span className="font-mono text-[11px] text-[#57DCA0] bg-[#050B08] border border-[#1A2F24] px-2.5 py-0.5 rounded-full">
-                Passo 1
-              </span>
-            </div>
-            <p className="text-xs sm:text-sm text-[#8EA396] mb-5 leading-relaxed">
-              Descreva em português a atuação da sua ONG, cooperativa ou projeto
-              comunitário no Brasil para encontrar o edital mais compatível.
-            </p>
+      {/* Main Content */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-10">
+        {/* Workspace: Form (5 cols) + Match Result / Guide (7 cols) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-7 items-start">
+          {/* Left Column: NGO Diagnosis & Match Form */}
+          <section className="lg:col-span-5 min-w-0">
+            <div className="gb-card rounded-3xl p-4 sm:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                <h2 className="font-display text-lg sm:text-xl font-bold text-[#F3F7F4] flex items-center gap-2">
+                  <Compass className="w-5 h-5 text-[#57DCA0] shrink-0" />
+                  <span>Diagnóstico da Organização</span>
+                </h2>
+                <span className="font-mono text-[11px] text-[#57DCA0] bg-[#050B08] border border-[#1A2F24] px-2.5 py-0.5 rounded-full">
+                  Passo 1
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-[#8EA396] mb-5 leading-relaxed">
+                Descreva em português a atuação da sua ONG, cooperativa ou
+                projeto comunitário no Brasil para encontrar o edital mais
+                compatível.
+              </p>
 
-            {/* 3 Quick-Fill Presets */}
-            <div className="mb-5">
-              <span className="block font-mono text-[11px] uppercase tracking-wider text-[#8EA396] mb-2">
-                Preenchimento Rápido (1 clique)
-              </span>
-              <div className="grid grid-cols-1 gap-2">
-                {QUICK_PRESETS.map((preset) => (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => {
-                      setOngProfile(preset.text);
-                      setMatchError(null);
-                    }}
-                    className="group text-left bg-[#050B08] hover:bg-[#20BD80]/10 border border-[#1A2F24] hover:border-[#20BD80]/60 rounded-xl px-3.5 py-2.5 transition flex items-center justify-between gap-2 cursor-pointer"
-                  >
-                    <span className="flex items-center gap-2.5 min-w-0">
-                      {renderPresetIcon(preset.icon)}
-                      <span className="text-xs font-medium text-[#F3F7F4] truncate">
-                        {preset.label}
+              {/* 3 Quick-Fill Presets — Touch-friendly min-h-[44px] & flex-wrap */}
+              <div className="mb-5">
+                <span className="block font-mono text-[11px] uppercase tracking-wider text-[#8EA396] mb-2">
+                  Preenchimento Rápido (1 clique)
+                </span>
+                <div className="flex flex-col gap-2">
+                  {QUICK_PRESETS.map((preset) => (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => {
+                        setOngProfile(preset.text);
+                        setMatchError(null);
+                      }}
+                      className="group min-h-[44px] w-full text-left bg-[#050B08] hover:bg-[#20BD80]/10 border border-[#1A2F24] hover:border-[#20BD80]/60 rounded-xl px-3.5 py-2.5 transition flex flex-wrap items-center justify-between gap-x-2 gap-y-1 cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2.5 min-w-0">
+                        {renderPresetIcon(preset.icon)}
+                        <span className="text-xs font-medium text-[#F3F7F4] break-words">
+                          {preset.label}
+                        </span>
                       </span>
+                      <span className="font-mono text-[10px] text-[#8EA396] group-hover:text-[#57DCA0] shrink-0">
+                        {preset.tag} →
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <form onSubmit={handleRunMatch} className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <label
+                      htmlFor="ong-profile-textarea"
+                      className="text-xs font-medium text-[#F3F7F4]"
+                    >
+                      Perfil e Objetivos da Iniciativa Ambiental
+                    </label>
+                    <span className="font-mono text-[11px] text-[#8EA396] shrink-0">
+                      {ongProfile.length}/4000
                     </span>
-                    <span className="font-mono text-[10px] text-[#8EA396] group-hover:text-[#57DCA0] shrink-0">
-                      {preset.tag} →
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <form onSubmit={handleRunMatch} className="space-y-4">
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label
-                    htmlFor="ong-profile-textarea"
-                    className="text-xs font-medium text-[#F3F7F4]"
-                  >
-                    Perfil e Objetivos da Iniciativa Ambiental
-                  </label>
-                  <span className="font-mono text-[11px] text-[#8EA396]">
-                    {ongProfile.length}/4000
-                  </span>
-                </div>
-                <textarea
-                  id="ong-profile-textarea"
-                  rows={5}
-                  maxLength={4000}
-                  value={ongProfile}
-                  onChange={(e) => setOngProfile(e.target.value)}
-                  disabled={matchLoading}
-                  placeholder="Ex: Somos uma associação comunitária de marisqueiras e pescadores em Salvador (BA) buscando recursos para restauração de manguezais e monitoramento participativo..."
-                  className="w-full rounded-2xl bg-[#050B08] border border-[#1A2F24] p-3.5 text-sm text-[#F3F7F4] placeholder:text-[#8EA396]/60 focus:outline-none focus:border-[#20BD80] focus:ring-2 focus:ring-[#20BD80]/20 transition resize-y"
-                />
-              </div>
-
-              {/* WhatsApp / SMS Alert Field */}
-              <div className="rounded-2xl bg-[#050B08] border border-[#1A2F24] p-3.5">
-                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                  <label
-                    htmlFor="whatsapp-phone-input"
-                    className="text-xs font-medium text-[#F3F7F4] flex items-center gap-1.5"
-                  >
-                    <Smartphone className="w-3.5 h-3.5 text-[#E7BD71]" />
-                    Telefone / WhatsApp com DDD (opcional)
-                  </label>
-                  <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-[#E7BD71]/12 text-[#E7BD71] border border-[#E7BD71]/30">
-                    Alerta por WhatsApp / SMS
-                  </span>
-                </div>
-                <input
-                  id="whatsapp-phone-input"
-                  type="tel"
-                  inputMode="numeric"
-                  maxLength={30}
-                  value={whatsappPhone}
-                  onChange={(e) => setWhatsappPhone(e.target.value)}
-                  disabled={matchLoading}
-                  placeholder="Ex: 71999999999"
-                  className="w-full rounded-xl bg-[#0B1611] border border-[#1A2F24] px-3.5 py-2.5 text-sm font-mono text-[#F3F7F4] placeholder:text-[#8EA396]/60 focus:outline-none focus:border-[#E7BD71]/70 transition"
-                />
-              </div>
-
-              {matchError && (
-                <div className="rounded-xl bg-red-950/45 border border-red-500/35 p-3 text-xs text-red-200 flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-                  <span>{matchError}</span>
-                </div>
-              )}
-
-              {matchSlowNotice && matchLoading && (
-                <div className="rounded-xl bg-[#050B08] border border-[#E7BD71]/40 p-3 text-xs text-[#E7BD71] flex items-start gap-2">
-                  <Clock className="w-4 h-4 shrink-0 mt-0.5 animate-pulse" />
-                  <span>
-                    Estamos finalizando a análise e redigindo sua proposta
-                    técnica em inglês. A primeira solicitação pode levar de 30 a
-                    50 segundos enquanto o servidor inicia.
-                  </span>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={matchLoading}
-                className="w-full py-3.5 px-5 rounded-2xl bg-[#20BD80] hover:bg-[#29D18F] active:scale-[0.99] text-[#050B08] font-display font-bold text-sm transition shadow-[0_12px_28px_-12px_rgba(32,189,128,0.6)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {matchLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Analisando Editais e Gerando Proposta...</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4" />
-                    <span>Encontrar Edital Compatível e Gerar Proposta</span>
-                  </>
-                )}
-              </button>
-            </form>
-
-            {/* User-Friendly Progress Log */}
-            {pipelineLogs.length > 0 && (
-              <div className="mt-4 rounded-2xl bg-[#050B08] border border-[#1A2F24] p-3.5 font-mono text-[11px] text-[#57DCA0] space-y-1.5">
-                {pipelineLogs.map((line, index) => (
-                  <div key={`${index}-${line}`} className="leading-relaxed">
-                    <span className="text-[#8EA396] mr-1.5">&gt;</span>
-                    {line}
                   </div>
-                ))}
+                  <textarea
+                    id="ong-profile-textarea"
+                    rows={5}
+                    maxLength={4000}
+                    value={ongProfile}
+                    onChange={(e) => setOngProfile(e.target.value)}
+                    disabled={matchLoading}
+                    placeholder="Ex: Somos uma associação comunitária de marisqueiras e pescadores em Salvador (BA) buscando recursos para restauração de manguezais e monitoramento participativo..."
+                    className="w-full rounded-2xl bg-[#050B08] border border-[#1A2F24] p-3.5 text-sm text-[#F3F7F4] placeholder:text-[#8EA396]/60 focus:outline-none focus:border-[#20BD80] focus:ring-2 focus:ring-[#20BD80]/20 transition resize-y"
+                  />
+                </div>
+
+                {/* WhatsApp / SMS Alert Field */}
+                <div className="rounded-2xl bg-[#050B08] border border-[#1A2F24] p-3.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <label
+                      htmlFor="whatsapp-phone-input"
+                      className="text-xs font-medium text-[#F3F7F4] flex items-center gap-1.5"
+                    >
+                      <Smartphone className="w-3.5 h-3.5 text-[#E7BD71] shrink-0" />
+                      <span>Telefone / WhatsApp com DDD (opcional)</span>
+                    </label>
+                    <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-[#E7BD71]/12 text-[#E7BD71] border border-[#E7BD71]/30">
+                      Alerta por WhatsApp / SMS
+                    </span>
+                  </div>
+                  <input
+                    id="whatsapp-phone-input"
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={30}
+                    value={whatsappPhone}
+                    onChange={(e) => setWhatsappPhone(e.target.value)}
+                    disabled={matchLoading}
+                    placeholder="Ex: 71999999999"
+                    className="w-full min-h-[44px] rounded-xl bg-[#0B1611] border border-[#1A2F24] px-3.5 py-2.5 text-sm font-mono text-[#F3F7F4] placeholder:text-[#8EA396]/60 focus:outline-none focus:border-[#E7BD71]/70 transition"
+                  />
+                </div>
+
+                {matchError && (
+                  <div className="rounded-xl bg-red-950/45 border border-red-500/35 p-3 text-xs text-red-200 flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                    <span className="break-words">{matchError}</span>
+                  </div>
+                )}
+
+                {matchSlowNotice && matchLoading && (
+                  <div className="rounded-xl bg-[#050B08] border border-[#E7BD71]/40 p-3 text-xs text-[#E7BD71] flex items-start gap-2">
+                    <Clock className="w-4 h-4 shrink-0 mt-0.5 animate-pulse" />
+                    <span className="break-words">
+                      Estamos finalizando a análise e redigindo sua proposta
+                      técnica em inglês. A primeira solicitação pode levar de 30
+                      a 50 segundos enquanto o servidor inicia.
+                    </span>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={matchLoading}
+                  className="w-full min-h-[48px] py-3.5 px-4 sm:px-5 rounded-2xl bg-[#20BD80] hover:bg-[#29D18F] active:scale-[0.99] text-[#050B08] font-display font-bold text-sm transition shadow-[0_12px_28px_-12px_rgba(32,189,128,0.6)] flex items-center justify-center gap-2 text-center cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {matchLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                      <span>Analisando Editais e Gerando Proposta...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 shrink-0" />
+                      <span>Encontrar Edital Compatível e Gerar Proposta</span>
+                    </>
+                  )}
+                </button>
+              </form>
+
+              {/* User-Friendly Progress Log */}
+              {pipelineLogs.length > 0 && (
+                <div className="mt-4 rounded-2xl bg-[#050B08] border border-[#1A2F24] p-3.5 font-mono text-[11px] text-[#57DCA0] space-y-1.5 overflow-x-hidden">
+                  {pipelineLogs.map((line, index) => (
+                    <div
+                      key={`${index}-${line}`}
+                      className="leading-relaxed break-words"
+                    >
+                      <span className="text-[#8EA396] mr-1.5">&gt;</span>
+                      {line}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Right Column: Match Result Dossier OR Guided Empty State */}
+          <section className="lg:col-span-7 min-w-0">
+            {matchResult ? (
+              (() => {
+                const alertDisplay = getAlertDisplay(
+                  matchResult.notification.status,
+                );
+                return (
+                  <div
+                    ref={resultRef}
+                    className="gb-card rounded-3xl p-4 sm:p-6 border border-[#20BD80]/45 min-w-0"
+                  >
+                    {/* Header: Mobile stacks Match Score Ring ABOVE Title; sm+ places Title left & Ring right */}
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pb-5 border-b border-[#1A2F24]">
+                      {/* Match Score Ring + Gold Funding Amount (first on mobile, right on sm+) */}
+                      <div className="sm:order-2 flex items-center gap-3.5 bg-[#050B08] border border-[#1A2F24] rounded-2xl px-4 py-3 w-full sm:w-auto shrink-0">
+                        <MatchScoreRing score={matchResult.match_score} />
+                        <div className="min-w-0">
+                          <div className="font-mono text-[10px] uppercase tracking-wider text-[#8EA396]">
+                            Financiamento
+                          </div>
+                          <div className="font-display font-bold text-sm text-[#E7BD71] mt-0.5 break-words">
+                            {matchResult.matched_grant.funding_amount}
+                          </div>
+                          <a
+                            href={safeExternalHref(
+                              matchResult.matched_grant.source_url,
+                            )}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[11px] text-[#57DCA0] hover:underline mt-1"
+                          >
+                            <span>Portal Oficial</span>
+                            <ExternalLink className="w-3 h-3 shrink-0" />
+                          </a>
+                        </div>
+                      </div>
+
+                      {/* Grant Title & Metadata (second on mobile, left on sm+) */}
+                      <div className="sm:order-1 space-y-1.5 flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="inline-flex items-center gap-1 font-mono text-[11px] font-semibold uppercase tracking-wider bg-[#20BD80]/20 text-[#57DCA0] border border-[#20BD80]/40 px-2.5 py-0.5 rounded-full">
+                            <Award className="w-3.5 h-3.5 shrink-0" />
+                            <span>Edital Recomendado</span>
+                          </span>
+                          <span className="font-mono text-[11px] text-[#8EA396]">
+                            Análise Inteligente
+                          </span>
+                        </div>
+                        <h2 className="font-display text-lg sm:text-2xl font-bold text-[#F3F7F4] leading-snug break-words">
+                          {matchResult.matched_grant.title}
+                        </h2>
+                        <p className="text-xs text-[#57DCA0] font-medium break-words">
+                          {matchResult.matched_grant.organization} •{" "}
+                          {matchResult.matched_grant.country} • Prazo:{" "}
+                          {matchResult.matched_grant.deadline}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Reasoning (PT-BR) + Mobile Alert Status */}
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 my-4">
+                      <div className="sm:col-span-7 rounded-2xl bg-[#050B08] border border-[#1A2F24] p-4 min-w-0">
+                        <div className="font-mono text-[10px] uppercase tracking-wider text-[#57DCA0] mb-1.5">
+                          Por que este edital?
+                        </div>
+                        <p className="text-xs sm:text-sm text-[#F3F7F4]/90 leading-relaxed break-words">
+                          {matchResult.match_reasoning_pt}
+                        </p>
+                      </div>
+
+                      <div className="sm:col-span-5 rounded-2xl bg-[#050B08] border border-[#1A2F24] p-4 flex flex-col justify-between gap-2 min-w-0">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="font-mono text-[10px] uppercase tracking-wider text-[#E7BD71]">
+                            Alerta por WhatsApp / SMS
+                          </span>
+                          <span
+                            className={`font-mono text-[10px] px-2 py-0.5 rounded-full ${alertDisplay.className}`}
+                          >
+                            {alertDisplay.badge}
+                          </span>
+                        </div>
+                        <p className="text-xs text-[#8EA396] leading-snug break-words">
+                          {alertDisplay.message}
+                        </p>
+                        {matchResult.notification.phone && (
+                          <span className="font-mono text-[11px] text-[#F3F7F4] break-all">
+                            Celular: +{matchResult.notification.phone}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* English Concept Note Viewer + Copy / .MD / .TXT Actions */}
+                    <div className="mt-5 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 mb-3">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <FileText className="w-4 h-4 text-[#57DCA0] shrink-0" />
+                          <h3 className="font-display font-semibold text-sm text-[#F3F7F4] break-words">
+                            Proposta Técnica em Inglês (Project Concept Note)
+                          </h3>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => void handleCopyProposal()}
+                            className="flex-1 sm:flex-none min-h-[38px] inline-flex items-center justify-center gap-1.5 text-xs font-display font-bold bg-[#20BD80] hover:bg-[#29D18F] text-[#050B08] px-3 py-1.5 rounded-lg transition cursor-pointer whitespace-nowrap"
+                          >
+                            {copiedProposal ? (
+                              <>
+                                <Check className="w-3.5 h-3.5 shrink-0" />
+                                <span>Copiado!</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3.5 h-3.5 shrink-0" />
+                                <span>Copiar Texto</span>
+                              </>
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadProposal("md")}
+                            className="min-h-[38px] inline-flex items-center justify-center gap-1.5 text-xs font-mono bg-[#050B08] hover:bg-[#1A2F24]/60 text-[#F3F7F4] border border-[#1A2F24] hover:border-[#20BD80]/50 px-3 py-1.5 rounded-lg transition cursor-pointer whitespace-nowrap"
+                          >
+                            <Download className="w-3.5 h-3.5 text-[#57DCA0] shrink-0" />
+                            <span>.MD</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadProposal("txt")}
+                            className="min-h-[38px] inline-flex items-center justify-center gap-1.5 text-xs font-mono bg-[#050B08] hover:bg-[#1A2F24]/60 text-[#F3F7F4] border border-[#1A2F24] hover:border-[#20BD80]/50 px-3 py-1.5 rounded-lg transition cursor-pointer whitespace-nowrap"
+                          >
+                            <FileDown className="w-3.5 h-3.5 text-[#57DCA0] shrink-0" />
+                            <span>.TXT</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <pre className="gb-scroll w-full max-w-full max-h-[430px] overflow-y-auto overflow-x-hidden rounded-2xl bg-[#050B08] border border-[#1A2F24] p-4 sm:p-5 text-xs sm:text-[13px] text-[#F3F7F4]/95 whitespace-pre-wrap break-words font-mono leading-relaxed">
+                        {matchResult.generated_proposal_en}
+                      </pre>
+                    </div>
+                  </div>
+                );
+              })()
+            ) : (
+              <div className="gb-card rounded-3xl p-4 sm:p-6 lg:p-8 border border-[#1A2F24] h-full flex flex-col justify-between gap-6">
+                <div className="space-y-3">
+                  <span className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-[#57DCA0] bg-[#050B08] border border-[#1A2F24] px-2.5 py-0.5 rounded-full">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Passo 2 • Resultado da Análise
+                  </span>
+                  <h2 className="font-display text-xl sm:text-2xl font-bold text-[#F3F7F4]">
+                    Sua recomendação e proposta técnica aparecerão aqui
+                  </h2>
+                  <p className="text-xs sm:text-sm text-[#8EA396] leading-relaxed">
+                    Escolha um dos perfis rápidos ao lado ou descreva sua
+                    organização para cruzar automaticamente com todos os fundos
+                    climáticos ativos no radar.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="rounded-2xl bg-[#050B08] border border-[#1A2F24] p-4 space-y-1.5">
+                    <div className="font-mono text-[11px] text-[#57DCA0]">
+                      01 • Compatibilidade
+                    </div>
+                    <p className="text-xs text-[#8EA396] leading-relaxed">
+                      Identifica o edital internacional mais aderente e calcula
+                      o percentual de compatibilidade.
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl bg-[#050B08] border border-[#1A2F24] p-4 space-y-1.5">
+                    <div className="font-mono text-[11px] text-[#E7BD71]">
+                      02 • Proposta em Inglês
+                    </div>
+                    <p className="text-xs text-[#8EA396] leading-relaxed">
+                      Redige uma Project Concept Note estruturada com impacto
+                      local, orçamento e ODS da ONU.
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl bg-[#050B08] border border-[#1A2F24] p-4 space-y-1.5">
+                    <div className="font-mono text-[11px] text-[#57DCA0]">
+                      03 • Alerta no Celular
+                    </div>
+                    <p className="text-xs text-[#8EA396] leading-relaxed">
+                      Notifica o líder comunitário por WhatsApp / SMS e libera
+                      download em .MD e .TXT.
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
-          </div>
-        </section>
+          </section>
+        </div>
 
-        {/* Right Column: Winning Match Dossier + Live Grants Radar */}
-        <section className="lg:col-span-7 space-y-7">
-          {/* Match Result Dossier */}
-          {matchResult && (() => {
-            const alertDisplay = getAlertDisplay(
-              matchResult.notification.status,
-            );
-            return (
-              <div
-                ref={resultRef}
-                className="gb-card rounded-3xl p-6 sm:p-7 border border-[#20BD80]/45"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-4 pb-5 border-b border-[#1A2F24]">
-                  <div className="space-y-1.5 flex-1 min-w-[220px]">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center gap-1 font-mono text-[11px] font-semibold uppercase tracking-wider bg-[#20BD80]/20 text-[#57DCA0] border border-[#20BD80]/40 px-2.5 py-0.5 rounded-full">
-                        <Award className="w-3.5 h-3.5" />
-                        Edital Recomendado
-                      </span>
-                      <span className="font-mono text-[11px] text-[#8EA396]">
-                        Análise Inteligente
-                      </span>
-                    </div>
-                    <h2 className="font-display text-xl sm:text-2xl font-bold text-[#F3F7F4] leading-snug">
-                      {matchResult.matched_grant.title}
-                    </h2>
-                    <p className="text-xs text-[#57DCA0] font-medium">
-                      {matchResult.matched_grant.organization} •{" "}
-                      {matchResult.matched_grant.country} • Prazo:{" "}
-                      {matchResult.matched_grant.deadline}
-                    </p>
-                  </div>
-
-                  {/* Circular Green Match Score + Gold Funding Amount */}
-                  <div className="flex items-center gap-3.5 bg-[#050B08] border border-[#1A2F24] rounded-2xl px-4 py-3 shrink-0">
-                    <MatchScoreRing score={matchResult.match_score} />
-                    <div>
-                      <div className="font-mono text-[10px] uppercase tracking-wider text-[#8EA396]">
-                        Financiamento
-                      </div>
-                      <div className="font-display font-bold text-sm text-[#E7BD71] mt-0.5">
-                        {matchResult.matched_grant.funding_amount}
-                      </div>
-                      <a
-                        href={safeExternalHref(
-                          matchResult.matched_grant.source_url,
-                        )}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[11px] text-[#57DCA0] hover:underline mt-1"
-                      >
-                        <span>Portal Oficial</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Reasoning (PT-BR) + Mobile Alert Status */}
-                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 my-4">
-                  <div className="sm:col-span-7 rounded-2xl bg-[#050B08] border border-[#1A2F24] p-4">
-                    <div className="font-mono text-[10px] uppercase tracking-wider text-[#57DCA0] mb-1.5">
-                      Por que este edital?
-                    </div>
-                    <p className="text-xs sm:text-sm text-[#F3F7F4]/90 leading-relaxed">
-                      {matchResult.match_reasoning_pt}
-                    </p>
-                  </div>
-
-                  <div className="sm:col-span-5 rounded-2xl bg-[#050B08] border border-[#1A2F24] p-4 flex flex-col justify-between gap-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-[#E7BD71]">
-                        Alerta por WhatsApp / SMS
-                      </span>
-                      <span
-                        className={`font-mono text-[10px] px-2 py-0.5 rounded-full ${alertDisplay.className}`}
-                      >
-                        {alertDisplay.badge}
-                      </span>
-                    </div>
-                    <p className="text-xs text-[#8EA396] leading-snug">
-                      {alertDisplay.message}
-                    </p>
-                    {matchResult.notification.phone && (
-                      <span className="font-mono text-[11px] text-[#F3F7F4]">
-                        Celular: +{matchResult.notification.phone}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* English Concept Note Viewer + Copy / .MD / .TXT Actions */}
-                <div className="mt-5">
-                  <div className="flex flex-wrap items-center justify-between gap-2.5 mb-2.5">
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-[#57DCA0]" />
-                      <h3 className="font-display font-semibold text-sm text-[#F3F7F4]">
-                        Proposta Técnica em Inglês (Project Concept Note)
-                      </h3>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => void handleCopyProposal()}
-                        className="inline-flex items-center gap-1.5 text-xs font-display font-bold bg-[#20BD80] hover:bg-[#29D18F] text-[#050B08] px-3 py-1.5 rounded-lg transition cursor-pointer"
-                      >
-                        {copiedProposal ? (
-                          <>
-                            <Check className="w-3.5 h-3.5" />
-                            <span>Copiado!</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5" />
-                            <span>Copiar Texto</span>
-                          </>
-                        )}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDownloadProposal("md")}
-                        className="inline-flex items-center gap-1.5 text-xs font-mono bg-[#050B08] hover:bg-[#1A2F24]/60 text-[#F3F7F4] border border-[#1A2F24] hover:border-[#20BD80]/50 px-3 py-1.5 rounded-lg transition cursor-pointer"
-                      >
-                        <Download className="w-3.5 h-3.5 text-[#57DCA0]" />
-                        <span>.MD</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDownloadProposal("txt")}
-                        className="inline-flex items-center gap-1.5 text-xs font-mono bg-[#050B08] hover:bg-[#1A2F24]/60 text-[#F3F7F4] border border-[#1A2F24] hover:border-[#20BD80]/50 px-3 py-1.5 rounded-lg transition cursor-pointer"
-                      >
-                        <FileDown className="w-3.5 h-3.5 text-[#57DCA0]" />
-                        <span>.TXT</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <pre className="gb-scroll max-h-[430px] overflow-y-auto rounded-2xl bg-[#050B08] border border-[#1A2F24] p-5 text-xs sm:text-[13px] text-[#F3F7F4]/95 whitespace-pre-wrap font-mono leading-relaxed">
-                    {matchResult.generated_proposal_en}
-                  </pre>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Live Grants Radar */}
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h2 className="font-display text-xl font-bold text-[#F3F7F4] flex items-center gap-2">
-                  <Radar className="w-5 h-5 text-[#57DCA0]" />
-                  Radar de Editais Internacionais
-                </h2>
-                <p className="text-xs text-[#8EA396] mt-0.5">
-                  Oportunidades climáticas internacionais atualizadas em tempo
-                  real.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIngestModalOpen(true)}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold bg-[#0B1611] hover:bg-[#20BD80]/12 text-[#57DCA0] border border-[#1A2F24] hover:border-[#20BD80]/50 px-3.5 py-2 rounded-xl transition cursor-pointer"
-              >
-                <PlusCircle className="w-4 h-4" />
-                <span>Adicionar Edital</span>
-              </button>
+        {/* Full-Width Live Grants Radar (1 col mobile, 2 cols tablet, 3 cols desktop) */}
+        <section className="space-y-4 sm:space-y-5 min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="font-display text-xl sm:text-2xl font-bold text-[#F3F7F4] flex items-center gap-2">
+                <Radar className="w-5 h-5 text-[#57DCA0] shrink-0" />
+                <span>Radar de Editais Internacionais</span>
+              </h2>
+              <p className="text-xs sm:text-sm text-[#8EA396] mt-0.5">
+                Oportunidades climáticas internacionais atualizadas em tempo
+                real.
+              </p>
             </div>
 
-            {/* Search Input */}
+            <button
+              type="button"
+              onClick={() => setIngestModalOpen(true)}
+              className="w-full sm:w-auto min-h-[42px] inline-flex items-center justify-center gap-1.5 text-xs font-semibold bg-[#0B1611] hover:bg-[#20BD80]/12 text-[#57DCA0] border border-[#1A2F24] hover:border-[#20BD80]/50 px-4 py-2 rounded-xl transition cursor-pointer shrink-0"
+            >
+              <PlusCircle className="w-4 h-4 shrink-0" />
+              <span>Adicionar Edital</span>
+            </button>
+          </div>
+
+          {/* Search + Category Filter Chips */}
+          <div className="space-y-3">
             <div className="relative">
               <Search className="w-4 h-4 text-[#8EA396] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
@@ -1042,11 +1132,10 @@ export function GrantBridgeDashboard() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar por fundo, bioma, país ou palavra-chave (ex: mangrove, UNDP, Amazon)..."
-                className="w-full rounded-xl bg-[#0B1611] border border-[#1A2F24] pl-10 pr-4 py-2.5 text-xs sm:text-sm text-[#F3F7F4] placeholder:text-[#8EA396]/70 focus:outline-none focus:border-[#20BD80] transition"
+                className="w-full min-h-[44px] rounded-xl bg-[#0B1611] border border-[#1A2F24] pl-10 pr-4 py-2.5 text-xs sm:text-sm text-[#F3F7F4] placeholder:text-[#8EA396]/70 focus:outline-none focus:border-[#20BD80] transition"
               />
             </div>
 
-            {/* Category Filter Chips */}
             <div className="flex flex-wrap items-center gap-2">
               {GRANT_FILTERS.map((filter) => {
                 const isActive = activeFilter === filter.id;
@@ -1055,7 +1144,7 @@ export function GrantBridgeDashboard() {
                     key={filter.id}
                     type="button"
                     onClick={() => setActiveFilter(filter.id)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-mono transition cursor-pointer border ${
+                    className={`min-h-[36px] px-3 py-1.5 rounded-full text-xs font-mono transition cursor-pointer border whitespace-nowrap ${
                       isActive
                         ? "bg-[#20BD80] text-[#050B08] border-[#20BD80] font-semibold"
                         : "bg-[#0B1611] text-[#8EA396] border-[#1A2F24] hover:border-[#20BD80]/50 hover:text-[#F3F7F4]"
@@ -1066,135 +1155,132 @@ export function GrantBridgeDashboard() {
                 );
               })}
             </div>
+          </div>
 
-            {/* Grants List States */}
-            {grantsLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((item) => (
-                  <div
-                    key={item}
-                    className="gb-card rounded-2xl p-5 animate-pulse space-y-3"
-                  >
-                    <div className="flex justify-between gap-4">
-                      <div className="h-4 w-2/3 rounded bg-[#1A2F24]" />
-                      <div className="h-5 w-24 rounded-full bg-[#1A2F24]" />
-                    </div>
-                    <div className="h-3 w-full rounded bg-[#1A2F24]/70" />
-                    <div className="h-3 w-5/6 rounded bg-[#1A2F24]/50" />
-                  </div>
-                ))}
-              </div>
-            ) : grantsError ? (
-              <div className="gb-card rounded-2xl p-6 text-center space-y-3 border border-red-500/30">
-                <AlertTriangle className="w-6 h-6 text-red-400 mx-auto" />
-                <div className="text-sm font-medium text-[#F3F7F4]">
-                  Não foi possível carregar os editais no momento
-                </div>
-                <p className="text-xs text-[#8EA396] max-w-md mx-auto">
-                  {grantsError}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => void refreshGrantsOnly()}
-                  className="inline-flex items-center gap-1.5 text-xs font-display font-bold bg-[#20BD80] hover:bg-[#29D18F] text-[#050B08] px-4 py-2 rounded-xl transition cursor-pointer"
+          {/* Grants Grid: 1 col mobile -> 2 cols md -> 3 cols lg */}
+          {grantsLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3].map((item) => (
+                <div
+                  key={item}
+                  className="gb-card rounded-2xl p-4 sm:p-5 animate-pulse space-y-3"
                 >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Tentar carregar novamente</span>
-                </button>
+                  <div className="flex justify-between gap-4">
+                    <div className="h-4 w-2/3 rounded bg-[#1A2F24]" />
+                    <div className="h-5 w-20 rounded-full bg-[#1A2F24]" />
+                  </div>
+                  <div className="h-3 w-full rounded bg-[#1A2F24]/70" />
+                  <div className="h-3 w-5/6 rounded bg-[#1A2F24]/50" />
+                </div>
+              ))}
+            </div>
+          ) : grantsError ? (
+            <div className="gb-card rounded-2xl p-6 text-center space-y-3 border border-red-500/30">
+              <AlertTriangle className="w-6 h-6 text-red-400 mx-auto" />
+              <div className="text-sm font-medium text-[#F3F7F4]">
+                Não foi possível carregar os editais no momento
               </div>
-            ) : filteredGrants.length === 0 ? (
-              <div className="gb-card rounded-2xl p-6 text-center space-y-2">
-                <p className="text-sm text-[#F3F7F4] font-medium">
-                  Nenhum edital encontrado para os filtros aplicados.
-                </p>
-                <p className="text-xs text-[#8EA396]">
-                  Limpe a busca ou adicione uma nova oportunidade internacional
-                  ao radar.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3.5">
-                {filteredGrants.map((grant) => {
-                  const isWinner = matchResult?.matched_grant.id === grant.id;
-                  return (
-                    <article
-                      key={grant.id}
-                      className={`gb-card rounded-2xl p-5 transition duration-200 hover:border-[#20BD80]/55 ${
-                        isWinner
-                          ? "border-[#57DCA0] ring-1 ring-[#20BD80]/40"
-                          : ""
-                      }`}
-                    >
-                      <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2 text-[11px] font-medium">
-                            <span className="text-[#57DCA0]">
-                              {grant.organization}
-                            </span>
-                            <span className="text-[#1A2F24]">•</span>
-                            <span className="text-[#8EA396]">
-                              {grant.country}
-                            </span>
-                          </div>
-                          <h3 className="font-display text-base font-bold text-[#F3F7F4] mt-0.5 leading-snug">
-                            {grant.title}
-                          </h3>
-                        </div>
-
+              <p className="text-xs text-[#8EA396] max-w-md mx-auto break-words">
+                {grantsError}
+              </p>
+              <button
+                type="button"
+                onClick={() => void refreshGrantsOnly()}
+                className="min-h-[42px] inline-flex items-center gap-1.5 text-xs font-display font-bold bg-[#20BD80] hover:bg-[#29D18F] text-[#050B08] px-4 py-2 rounded-xl transition cursor-pointer"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Tentar carregar novamente</span>
+              </button>
+            </div>
+          ) : filteredGrants.length === 0 ? (
+            <div className="gb-card rounded-2xl p-6 text-center space-y-2">
+              <p className="text-sm text-[#F3F7F4] font-medium">
+                Nenhum edital encontrado para os filtros aplicados.
+              </p>
+              <p className="text-xs text-[#8EA396]">
+                Limpe a busca ou adicione uma nova oportunidade internacional ao
+                radar.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredGrants.map((grant) => {
+                const isWinner = matchResult?.matched_grant.id === grant.id;
+                return (
+                  <article
+                    key={grant.id}
+                    className={`gb-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between gap-4 min-w-0 transition duration-200 hover:border-[#20BD80]/55 ${
+                      isWinner
+                        ? "border-[#57DCA0] ring-1 ring-[#20BD80]/40"
+                        : ""
+                    }`}
+                  >
+                    <div className="space-y-2.5 min-w-0">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="text-[11px] font-medium text-[#57DCA0] truncate max-w-full">
+                          {grant.organization}
+                        </span>
                         {isWinner ? (
-                          <span className="font-mono text-[11px] font-semibold bg-[#20BD80]/20 text-[#57DCA0] border border-[#20BD80]/45 px-2.5 py-1 rounded-full shrink-0">
-                            ★ Melhor Compatibilidade ({matchResult.match_score}
-                            %)
+                          <span className="font-mono text-[10px] font-semibold bg-[#20BD80]/20 text-[#57DCA0] border border-[#20BD80]/45 px-2 py-0.5 rounded-full shrink-0">
+                            ★ {matchResult.match_score}% Match
                           </span>
                         ) : (
-                          <span className="font-mono text-[11px] font-semibold bg-[#E7BD71]/12 text-[#E7BD71] border border-[#E7BD71]/30 px-2.5 py-1 rounded-full shrink-0">
+                          <span className="font-mono text-[10px] font-semibold bg-[#E7BD71]/12 text-[#E7BD71] border border-[#E7BD71]/30 px-2 py-0.5 rounded-full max-w-full truncate">
                             {grant.funding_amount}
                           </span>
                         )}
                       </div>
 
-                      <p className="text-xs sm:text-sm text-[#8EA396] leading-relaxed mb-4">
-                        {grant.description}
+                      <h3 className="font-display text-base font-bold text-[#F3F7F4] leading-snug break-words">
+                        {grant.title}
+                      </h3>
+
+                      <p className="text-[11px] text-[#8EA396] break-words">
+                        {grant.country}
                       </p>
 
-                      <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#1A2F24] text-xs">
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[#8EA396]">
-                          <span>
-                            Valor:{" "}
-                            <strong className="text-[#E7BD71] font-mono">
-                              {grant.funding_amount}
-                            </strong>
-                          </span>
-                          <span>
-                            Prazo:{" "}
-                            <span className="text-[#F3F7F4]">
-                              {grant.deadline}
-                            </span>
-                          </span>
-                        </div>
+                      <p className="text-xs sm:text-sm text-[#8EA396] leading-relaxed break-words">
+                        {grant.description}
+                      </p>
+                    </div>
 
-                        <a
-                          href={safeExternalHref(grant.source_url)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[#57DCA0] hover:text-[#20BD80] font-medium transition"
-                        >
-                          <span>Portal Oficial</span>
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </a>
+                    <div className="pt-3 border-t border-[#1A2F24] space-y-2.5 text-xs">
+                      <div className="flex flex-col gap-1 text-[#8EA396]">
+                        <span className="break-words">
+                          Valor:{" "}
+                          <strong className="text-[#E7BD71] font-mono">
+                            {grant.funding_amount}
+                          </strong>
+                        </span>
+                        <span className="break-words">
+                          Prazo:{" "}
+                          <span className="text-[#F3F7F4]">
+                            {grant.deadline}
+                          </span>
+                        </span>
                       </div>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+
+                      <a
+                        href={safeExternalHref(grant.source_url)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[#57DCA0] hover:text-[#20BD80] font-medium transition pt-0.5"
+                      >
+                        <span>Acessar Portal Oficial</span>
+                        <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                      </a>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
         </section>
       </main>
 
       {/* Footer */}
       <footer className="border-t border-[#1A2F24] py-6 text-xs text-[#8EA396]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
           <span>
             GrantBridge AI • Hack Brasil 2026 (Meio Ambiente &amp; Economia
             Verde)

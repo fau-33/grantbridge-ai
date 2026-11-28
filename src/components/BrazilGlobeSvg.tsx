@@ -6,12 +6,12 @@ interface BrazilGlobeSvgProps {
 
 export function BrazilGlobeSvg({ activeGrantsCount }: BrazilGlobeSvgProps) {
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
+    <div className="relative w-44 h-44 sm:w-64 sm:h-64 lg:w-80 lg:h-80 mx-auto flex items-center justify-center shrink-0">
       <svg
         viewBox="0 0 360 320"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full max-w-[350px] h-auto select-none"
+        className="w-full h-full select-none overflow-visible"
         role="img"
         aria-label="Globo vetorial conectando fundos climáticos internacionais ao Brasil"
       >

@@ -40,7 +40,7 @@ export default function RootLayout({
       lang="pt-BR"
       className={`${spaceGrotesk.variable} ${plusJakartaSans.variable} ${jetBrainsMono.variable} dark h-full antialiased`}
     >
-      <body className="min-h-full bg-[#050B08] text-[#F3F7F4] font-sans selection:bg-[#20BD80]/30 selection:text-[#57DCA0]">
+      <body className="min-h-full overflow-x-hidden bg-[#050B08] text-[#F3F7F4] font-sans selection:bg-[#20BD80]/30 selection:text-[#57DCA0]">
         {children}
       </body>
     </html>
