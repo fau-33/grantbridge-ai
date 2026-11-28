@@ -1,26 +1,88 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --gb-bg: #050B08;
+  --gb-card: #0B1611;
+  --gb-border: #1A2F24;
+  --gb-primary: #20BD80;
+  --gb-highlight: #57DCA0;
+  --gb-gold: #E7BD71;
+  --gb-text: #F3F7F4;
+  --gb-muted: #8EA396;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-gb-bg: var(--gb-bg);
+  --color-gb-card: var(--gb-card);
+  --color-gb-border: var(--gb-border);
+  --color-gb-primary: var(--gb-primary);
+  --color-gb-highlight: var(--gb-highlight);
+  --color-gb-gold: var(--gb-gold);
+  --color-gb-text: var(--gb-text);
+  --color-gb-muted: var(--gb-muted);
+
+  --font-display: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+  --font-sans: var(--font-plus-jakarta-sans), "Plus Jakarta Sans", sans-serif;
+  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background-color: var(--gb-bg);
+  color: var(--gb-text);
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--gb-bg);
+  background-image:
+    radial-gradient(ellipse 75% 45% at 12% -8%, rgba(32, 189, 128, 0.14), transparent 60%),
+    radial-gradient(ellipse 55% 38% at 92% 4%, rgba(231, 189, 113, 0.07), transparent 55%),
+    radial-gradient(rgba(87, 220, 160, 0.045) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 28px 28px;
+  color: var(--gb-text);
+  font-family: var(--font-sans);
+}
+
+.gb-card {
+  background-color: var(--gb-card);
+  border: 1px solid var(--gb-border);
+  box-shadow: 0 20px 48px -28px rgba(0, 0, 0, 0.9);
+}
+
+.gb-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.gb-scroll::-webkit-scrollbar-track {
+  background: #050B08;
+}
+
+.gb-scroll::-webkit-scrollbar-thumb {
+  background: #1A2F24;
+  border-radius: 9999px;
+}
+
+.gb-scroll::-webkit-scrollbar-thumb:hover {
+  background: #20BD80;
+}
+
+@keyframes gbPulseRing {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.75;
+  }
+  70% {
+    transform: scale(1.85);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.85);
+    opacity: 0;
+  }
+}
+
+.gb-beacon-ring {
+  transform-origin: center;
+  animation: gbPulseRing 2.6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
 }
