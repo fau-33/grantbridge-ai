@@ -34,8 +34,23 @@ class ServiceError(Exception):
         self.status_code = status_code
 
 
+def _assert_global_ip(ip_obj: ipaddress.IPv4Address | ipaddress.IPv6Address, error_msg: str) -> None:
+    """Reject non-global/private/reserved IPs, including IPv6-mapped IPv4 addresses."""
+    normalized = ip_obj.ipv4_mapped if isinstance(ip_obj, ipaddress.IPv6Address) and ip_obj.ipv4_mapped else ip_obj
+    if (
+        not normalized.is_global
+        or normalized.is_private
+        or normalized.is_loopback
+        or normalized.is_link_local
+        or normalized.is_reserved
+        or normalized.is_multicast
+        or normalized.is_unspecified
+    ):
+        raise ServiceError(error_msg, status_code=422)
+
+
 def validate_public_url(raw_url: str) -> str:
-    """Validate that a user-supplied URL is a safe public http(s) URL (SSRF guard)."""
+    """Validate that a user-supplied URL is a safe public http(s) URL (strict SSRF guard)."""
     url = raw_url.strip()
     if not url or len(url) > 2048:
         raise ServiceError("URL inválida ou muito longa.", status_code=422)
@@ -47,27 +62,47 @@ def validate_public_url(raw_url: str) -> str:
             status_code=422,
         )
 
-    host = parsed.hostname.lower()
-    if host in {"localhost", "127.0.0.1", "0.0.0.0", "::1"} or host.endswith(".local"):
+    if parsed.username is not None or parsed.password is not None:
+        raise ServiceError("URLs com credenciais embutidas não são permitidas.", status_code=422)
+
+    try:
+        port = parsed.port
+    except ValueError as exc:
+        raise ServiceError("Porta inválida na URL informada.", status_code=422) from exc
+
+    if port not in (None, 80, 443):
+        raise ServiceError("Apenas portas padrão HTTP (80) e HTTPS (443) são permitidas.", status_code=422)
+
+    host = parsed.hostname.lower().rstrip(".")
+    blocked_hosts = {"localhost", "127.0.0.1", "0.0.0.0", "::1", "metadata.google.internal"}
+    blocked_suffixes = (".local", ".internal", ".localhost", ".arpa")
+    if host in blocked_hosts or host.endswith(blocked_suffixes):
         raise ServiceError("URLs locais ou privadas não são permitidas.", status_code=422)
 
     # Check if host is a literal IP address
     try:
         ip_obj = ipaddress.ip_address(host)
-        if not ip_obj.is_global:
-            raise ServiceError("Endereços IP privados ou reservados não são permitidos.", status_code=422)
+        _assert_global_ip(ip_obj, "Endereços IP privados ou reservados não são permitidos.")
     except ValueError:
-        # Hostname — resolve DNS if possible and block private targets
+        # Hostname — resolve DNS in fail-closed mode and block private/non-global targets
         try:
-            infos = socket.getaddrinfo(host, None)
-            for info in infos:
-                addr = info[4][0]
-                ip_obj = ipaddress.ip_address(addr)
-                if not ip_obj.is_global:
-                    raise ServiceError("O destino informado aponta para uma rede privada.", status_code=422)
-        except socket.gaierror:
-            # Allow Firecrawl to attempt resolution if local DNS cannot resolve
-            pass
+            infos = socket.getaddrinfo(host, port or (443 if parsed.scheme == "https" else 80))
+        except socket.gaierror as exc:
+            raise ServiceError(
+                "Não foi possível resolver o domínio da URL informada.",
+                status_code=422,
+            ) from exc
+
+        if not infos:
+            raise ServiceError(
+                "Não foi possível resolver o domínio da URL informada.",
+                status_code=422,
+            )
+
+        for info in infos:
+            addr = info[4][0]
+            ip_obj = ipaddress.ip_address(addr)
+            _assert_global_ip(ip_obj, "O destino informado aponta para uma rede privada ou reservada.")
 
     return url
 

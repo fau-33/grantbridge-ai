@@ -45,5 +45,13 @@ class Settings:
     def gemini_model(self) -> str:
         return os.getenv("GEMINI_MODEL", "gemini-2.5-flash").strip()
 
+    @property
+    def allowed_origins(self) -> list[str]:
+        raw = os.getenv(
+            "ALLOWED_ORIGINS",
+            "https://grantbridge-ai-theta.vercel.app,http://localhost:3000",
+        )
+        return [origin.strip() for origin in raw.split(",") if origin.strip()]
+
 
 settings = Settings()

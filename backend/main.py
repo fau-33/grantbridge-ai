@@ -8,6 +8,8 @@ grants using Neon PostgreSQL, Firecrawl v2, Google Gemini 2.5 Flash, and Nvoip v
 from __future__ import annotations
 
 import logging
+import time
+from collections import defaultdict, deque
 from contextlib import asynccontextmanager
 from typing import Any
 
@@ -59,14 +61,48 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS enabled for Vercel frontend & local development
+# CORS restricted to approved frontend origins (Vercel + local dev)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.allowed_origins,
     allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Accept"],
 )
+
+_RATE_BUCKETS: dict[str, deque[float]] = defaultdict(deque)
+
+
+def enforce_rate_limit(
+    request: Request,
+    bucket: str,
+    max_requests: int,
+    window_seconds: int = 60,
+) -> None:
+    """In-memory sliding-window rate limiter per client IP (Render X-Forwarded-For aware)."""
+    forwarded = request.headers.get("x-forwarded-for", "")
+    client_ip = (forwarded.split(",")[0].strip() if forwarded else None) or (
+        request.client.host if request.client else "unknown"
+    )
+    key = f"{bucket}:{client_ip}"
+    now = time.monotonic()
+    timestamps = _RATE_BUCKETS[key]
+    while timestamps and now - timestamps[0] > window_seconds:
+        timestamps.popleft()
+    if len(timestamps) >= max_requests:
+        raise HTTPException(
+            status_code=429,
+            detail="Muitas requisições em sequência. Aguarde um minuto e tente novamente.",
+        )
+    timestamps.append(now)
+
+
+def _mask_phone(phone: str) -> str:
+    """Mask phone numbers before returning proposal history publicly (LGPD/PII guard)."""
+    digits = (phone or "").strip()
+    if len(digits) <= 4:
+        return ""
+    return f"{digits[:4]}*****{digits[-2:]}"
 
 
 @app.middleware("http")
@@ -157,8 +193,9 @@ async def get_grants() -> dict[str, Any]:
 
 
 @app.post("/api/ingest-url", status_code=201)
-async def ingest_grant_url(payload: IngestUrlRequest) -> dict[str, Any]:
+async def ingest_grant_url(request: Request, payload: IngestUrlRequest) -> dict[str, Any]:
     """Scrape a grant URL live with Firecrawl v2, extract metadata via Gemini, and save to Neon."""
+    enforce_rate_limit(request, bucket="ingest-url", max_requests=5, window_seconds=60)
     safe_url = validate_public_url(payload.url)
     markdown = await scrape_with_firecrawl(safe_url)
     extracted = extract_grant_from_markdown(markdown, safe_url)
@@ -176,8 +213,9 @@ async def ingest_grant_url(payload: IngestUrlRequest) -> dict[str, Any]:
 
 
 @app.post("/api/match")
-async def match_organization(payload: MatchRequest) -> dict[str, Any]:
+async def match_organization(request: Request, payload: MatchRequest) -> dict[str, Any]:
     """Match a Brazilian NGO profile to the best grant, draft an English Concept Note, and alert via Nvoip."""
+    enforce_rate_limit(request, bucket="match", max_requests=10, window_seconds=60)
     try:
         grants = list_grants()
     except Exception as exc:
@@ -235,4 +273,8 @@ async def get_proposals(limit: int = 10) -> dict[str, Any]:
     except Exception as exc:
         logger.exception("Failed to list proposals.")
         raise HTTPException(status_code=500, detail="Erro ao listar propostas.") from exc
-    return {"count": len(proposals), "proposals": proposals}
+    sanitized = [
+        {**proposal, "phone_notified": _mask_phone(str(proposal.get("phone_notified") or ""))}
+        for proposal in proposals
+    ]
+    return {"count": len(sanitized), "proposals": sanitized}
