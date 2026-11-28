@@ -135,7 +135,7 @@ async function requestJson<TResponse>(
 
     if (timedOut) {
       throw new ApiError(
-        "Tempo limite de 60s excedido ao conectar com a API (o servidor no Render pode estar iniciando). Tente novamente.",
+        "Tempo limite excedido ao conectar com a plataforma (o servidor pode estar iniciando). Tente novamente.",
         { status: 408, isTimeout: true },
       );
     }

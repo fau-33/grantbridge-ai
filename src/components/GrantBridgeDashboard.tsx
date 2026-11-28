@@ -8,14 +8,14 @@ import {
   Clock,
   Compass,
   Copy,
-  Database,
   Download,
   ExternalLink,
   FileDown,
   FileText,
-  Flame,
+  Globe2,
   Loader2,
   MessageSquare,
+  Plus,
   PlusCircle,
   Radar,
   Recycle,
@@ -29,7 +29,6 @@ import {
 } from "lucide-react";
 
 import {
-  API_BASE_URL,
   ApiError,
   getGrants,
   getHealth,
@@ -87,13 +86,12 @@ const GRANT_FILTERS: { id: GrantCategoryFilter; label: string }[] = [
   { id: "circular", label: "Economia Circular" },
 ];
 
-type IntegrationState = "loading" | "online" | "warning" | "offline";
+type ServiceState = "loading" | "online" | "warning" | "offline";
 
-interface IntegrationStatusItem {
+interface ServiceStatusItem {
   key: string;
   label: string;
-  detail: string;
-  state: IntegrationState;
+  state: ServiceState;
 }
 
 function safeExternalHref(url: string): string {
@@ -156,23 +154,23 @@ function matchesCategory(grant: Grant, category: GrantCategoryFilter): boolean {
 }
 
 export function GrantBridgeDashboard() {
-  // Health state
+  // Real health status from GET /api/health
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [healthLoading, setHealthLoading] = useState(true);
   const [healthError, setHealthError] = useState<string | null>(null);
 
-  // Grants Radar state
+  // Real grants from GET /api/grants
   const [grants, setGrants] = useState<Grant[]>([]);
   const [grantsLoading, setGrantsLoading] = useState(true);
   const [grantsError, setGrantsError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<GrantCategoryFilter>("all");
 
-  // Cold-start detection (> 4 seconds on initial load or match)
+  // Cold-start detection (> 4 seconds)
   const [initialColdStart, setInitialColdStart] = useState(false);
   const [coldStartSeconds, setColdStartSeconds] = useState(0);
 
-  // Match Engine state
+  // Match engine state
   const [ongProfile, setOngProfile] = useState("");
   const [whatsappPhone, setWhatsappPhone] = useState("");
   const [matchLoading, setMatchLoading] = useState(false);
@@ -182,7 +180,7 @@ export function GrantBridgeDashboard() {
   const [matchResult, setMatchResult] = useState<MatchResponse | null>(null);
   const [copiedProposal, setCopiedProposal] = useState(false);
 
-  // Firecrawl Modal state
+  // Add Grant modal state
   const [ingestModalOpen, setIngestModalOpen] = useState(false);
 
   const resultRef = useRef<HTMLDivElement | null>(null);
@@ -221,7 +219,7 @@ export function GrantBridgeDashboard() {
       setHealthError(
         err instanceof ApiError
           ? err.detail || err.message
-          : "Não foi possível consultar /api/health.",
+          : "Não foi possível verificar o status da plataforma.",
       );
     }
     setHealthLoading(false);
@@ -234,7 +232,7 @@ export function GrantBridgeDashboard() {
       setGrantsError(
         err instanceof ApiError
           ? err.detail || err.message
-          : "Não foi possível carregar os editais do Neon PostgreSQL.",
+          : "Não foi possível carregar os editais no momento.",
       );
     }
     setGrantsLoading(false);
@@ -250,7 +248,7 @@ export function GrantBridgeDashboard() {
       setGrantsError(
         err instanceof ApiError
           ? err.detail || err.message
-          : "Falha ao atualizar lista de editais.",
+          : "Falha ao atualizar a lista de editais.",
       );
     } finally {
       setGrantsLoading(false);
@@ -261,83 +259,74 @@ export function GrantBridgeDashboard() {
     void fetchAllInitialData();
   }, [fetchAllInitialData]);
 
-  // Derive honest integration status items strictly from GET /api/health
-  const integrationStatuses: IntegrationStatusItem[] = useMemo(() => {
+  // User-facing service indicators backed strictly by real GET /api/health data
+  const serviceStatuses: ServiceStatusItem[] = useMemo(() => {
     if (healthLoading) {
       return [
-        { key: "neon", label: "Neon DB", detail: "Verificando...", state: "loading" },
-        { key: "firecrawl", label: "Firecrawl v2", detail: "Verificando...", state: "loading" },
-        { key: "gemini", label: "Gemini 2.5", detail: "Verificando...", state: "loading" },
-        { key: "nvoip", label: "Nvoip v3", detail: "Verificando...", state: "loading" },
+        { key: "radar", label: "Verificando Radar...", state: "loading" },
+        { key: "analysis", label: "Verificando Análise...", state: "loading" },
+        { key: "alerts", label: "Verificando Alertas...", state: "loading" },
       ];
     }
 
     if (!health) {
       return [
-        { key: "neon", label: "Neon DB", detail: "Offline", state: "offline" },
-        { key: "firecrawl", label: "Firecrawl v2", detail: "Offline", state: "offline" },
-        { key: "gemini", label: "Gemini 2.5", detail: "Offline", state: "offline" },
-        { key: "nvoip", label: "Nvoip v3", detail: "Offline", state: "offline" },
+        { key: "radar", label: "Radar Climático Offline", state: "offline" },
+        { key: "analysis", label: "Análise Indisponível", state: "offline" },
+        { key: "alerts", label: "Alertas Indisponíveis", state: "offline" },
       ];
     }
 
     const { neon_postgresql, firecrawl_v2, gemini_ai, nvoip_v3 } =
       health.integrations;
 
-    const neonState: IntegrationState =
-      neon_postgresql.connected && neon_postgresql.status === "ok"
+    const dbReady =
+      neon_postgresql.connected && neon_postgresql.status === "ok";
+    const scrapingReady =
+      firecrawl_v2.configured && firecrawl_v2.status === "ready";
+    const radarState: ServiceState =
+      dbReady && scrapingReady
         ? "online"
-        : neon_postgresql.status === "not_configured"
+        : dbReady || neon_postgresql.status === "not_configured"
           ? "warning"
           : "offline";
 
-    const firecrawlState: IntegrationState =
-      firecrawl_v2.configured && firecrawl_v2.status === "ready"
-        ? "online"
-        : "offline";
-
-    const geminiState: IntegrationState =
+    const analysisState: ServiceState =
       gemini_ai.configured && gemini_ai.status === "ready"
         ? "online"
         : "offline";
 
-    const nvoipState: IntegrationState =
+    const alertsState: ServiceState =
       nvoip_v3.configured && nvoip_v3.status === "ready"
         ? "online"
         : "offline";
 
     return [
       {
-        key: "neon",
-        label: "Neon DB",
-        detail:
-          neonState === "online"
-            ? "Conectado"
-            : neonState === "warning"
-              ? "Fallback"
-              : "Offline",
-        state: neonState,
+        key: "radar",
+        label:
+          radarState === "online"
+            ? "Radar Climático Online"
+            : radarState === "warning"
+              ? "Radar em Modo Parcial"
+              : "Radar Climático Offline",
+        state: radarState,
       },
       {
-        key: "firecrawl",
-        label: "Firecrawl v2",
-        detail: firecrawlState === "online" ? "Pronto" : "Indisponível",
-        state: firecrawlState,
+        key: "analysis",
+        label:
+          analysisState === "online"
+            ? "Análise Inteligente Ativa"
+            : "Análise Indisponível",
+        state: analysisState,
       },
       {
-        key: "gemini",
-        label: "Gemini 2.5",
-        detail:
-          geminiState === "online"
-            ? gemini_ai.model || "Ativo"
-            : "Indisponível",
-        state: geminiState,
-      },
-      {
-        key: "nvoip",
-        label: "Nvoip v3",
-        detail: nvoipState === "online" ? "Ativo" : "Indisponível",
-        state: nvoipState,
+        key: "alerts",
+        label:
+          alertsState === "online"
+            ? "Alertas Habilitados"
+            : "Alertas Indisponíveis",
+        state: alertsState,
       },
     ];
   }, [health, healthLoading]);
@@ -365,7 +354,7 @@ export function GrantBridgeDashboard() {
     if (!parsed.success) {
       setMatchError(
         parsed.error.issues[0]?.message ||
-          "Revise os campos antes de calcular o match.",
+          "Revise os campos antes de buscar oportunidades.",
       );
       return;
     }
@@ -373,11 +362,11 @@ export function GrantBridgeDashboard() {
     setMatchLoading(true);
     setMatchSlowNotice(false);
     setPipelineLogs([
-      "Validando perfil da organização com Zod...",
-      `Consultando editais reais no Neon PostgreSQL (${API_BASE_URL})...`,
-      "Calculando Match Score e redigindo Project Concept Note em inglês com Gemini 2.5 Flash...",
+      "Analisando o perfil da sua organização...",
+      "Consultando oportunidades climáticas internacionais no radar...",
+      "Calculando compatibilidade e redigindo proposta técnica em inglês...",
       ...(parsed.data.whatsapp_phone
-        ? [`Acionando alerta Nvoip v3 para ${parsed.data.whatsapp_phone}...`]
+        ? [`Preparando alerta para o celular ${parsed.data.whatsapp_phone}...`]
         : []),
     ]);
 
@@ -390,7 +379,7 @@ export function GrantBridgeDashboard() {
       setMatchResult(response);
       setPipelineLogs((prev) => [
         ...prev,
-        `Match concluído (${response.match_score}%)! Proposta #${response.proposal_id} persistida no Neon DB.`,
+        `Compatibilidade calculada (${response.match_score}%)! Sua proposta técnica em inglês está pronta.`,
       ]);
       window.setTimeout(() => {
         resultRef.current?.scrollIntoView({
@@ -402,9 +391,9 @@ export function GrantBridgeDashboard() {
       const msg =
         err instanceof ApiError
           ? err.detail || err.message
-          : "Erro inesperado ao executar o motor de match.";
+          : "Erro inesperado ao calcular a compatibilidade.";
       setMatchError(msg);
-      setPipelineLogs((prev) => [...prev, `Erro: ${msg}`]);
+      setPipelineLogs((prev) => [...prev, `Não foi possível concluir: ${msg}`]);
     } finally {
       window.clearTimeout(slowTimer);
       setMatchLoading(false);
@@ -453,7 +442,7 @@ export function GrantBridgeDashboard() {
     return <Trees className="w-4 h-4 text-[#57DCA0]" />;
   }
 
-  function renderStatusDot(state: IntegrationState) {
+  function renderStatusDot(state: ServiceState) {
     if (state === "loading") {
       return (
         <span className="w-2 h-2 rounded-full bg-[#E7BD71] animate-pulse shrink-0" />
@@ -470,24 +459,28 @@ export function GrantBridgeDashboard() {
     return <span className="w-2 h-2 rounded-full bg-red-400 shrink-0" />;
   }
 
-  function getNvoipBadgeStyle(status: string) {
+  function getAlertDisplay(status: string) {
     if (status === "sent") {
       return {
-        label: "ENVIADO",
+        badge: "ENVIADO",
         className:
           "bg-[#20BD80]/20 text-[#57DCA0] border border-[#20BD80]/40",
+        message: "Alerta enviado para o seu celular.",
       };
     }
     if (status === "skipped") {
       return {
-        label: "OPCIONAL",
+        badge: "OPCIONAL",
         className: "bg-[#050B08] text-[#8EA396] border border-[#1A2F24]",
+        message: "Nenhum telefone informado para notificação.",
       };
     }
     return {
-      label: "FALLBACK SEGURO",
+      badge: "REGISTRADO",
       className:
         "bg-[#E7BD71]/15 text-[#E7BD71] border border-[#E7BD71]/35",
+      message:
+        "Alerta registrado com sucesso (disparo em modo de demonstração).",
     };
   }
 
@@ -515,27 +508,25 @@ export function GrantBridgeDashboard() {
             </div>
           </div>
 
-          {/* Live Health Integrations Bar (GET /api/health) */}
+          {/* User-Oriented Live Status Indicators (backed by GET /api/health) */}
           <div className="flex flex-wrap items-center gap-2">
             <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#0B1611] border border-[#1A2F24]">
-              {integrationStatuses.map((item) => (
+              {serviceStatuses.map((item) => (
                 <div
                   key={item.key}
-                  title={`${item.label}: ${item.detail}`}
-                  className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-[#050B08]/80 border border-[#1A2F24]/80 text-[11px] font-mono"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-[#050B08]/80 border border-[#1A2F24]/80 text-[11px] font-medium"
                 >
                   {renderStatusDot(item.state)}
-                  <span className="text-[#F3F7F4]">{item.label}</span>
                   <span
                     className={
                       item.state === "online"
-                        ? "text-[#57DCA0]"
+                        ? "text-[#F3F7F4]"
                         : item.state === "warning" || item.state === "loading"
                           ? "text-[#E7BD71]"
-                          : "text-red-400"
+                          : "text-red-300"
                     }
                   >
-                    {item.detail}
+                    {item.label}
                   </span>
                 </div>
               ))}
@@ -545,13 +536,13 @@ export function GrantBridgeDashboard() {
               type="button"
               onClick={() => void fetchAllInitialData()}
               disabled={healthLoading || grantsLoading}
-              title="Atualizar status da API e editais"
-              className="inline-flex items-center gap-1.5 text-xs font-mono text-[#8EA396] hover:text-[#F3F7F4] bg-[#0B1611] border border-[#1A2F24] hover:border-[#20BD80]/50 px-3 py-2 rounded-xl transition cursor-pointer disabled:opacity-50"
+              title="Atualizar status e oportunidades"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-[#8EA396] hover:text-[#F3F7F4] bg-[#0B1611] border border-[#1A2F24] hover:border-[#20BD80]/50 px-3 py-2 rounded-xl transition cursor-pointer disabled:opacity-50"
             >
               <RefreshCw
                 className={`w-3.5 h-3.5 ${healthLoading || grantsLoading ? "animate-spin text-[#57DCA0]" : ""}`}
               />
-              <span className="hidden sm:inline">Sincronizar</span>
+              <span className="hidden sm:inline">Atualizar</span>
             </button>
 
             <button
@@ -559,39 +550,37 @@ export function GrantBridgeDashboard() {
               onClick={() => setIngestModalOpen(true)}
               className="inline-flex items-center gap-1.5 text-xs font-display font-bold bg-[#20BD80] hover:bg-[#29D18F] text-[#050B08] px-3.5 py-2 rounded-xl transition cursor-pointer shadow-[0_8px_24px_-10px_rgba(32,189,128,0.65)]"
             >
-              <Flame className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Adicionar Edital (Firecrawl)</span>
-              <span className="md:hidden">+ Edital</span>
+              <Plus className="w-3.5 h-3.5" />
+              <span>Adicionar Edital</span>
             </button>
           </div>
         </div>
 
-        {/* Compact Integration Pills on Mobile/Tablet */}
+        {/* Compact Status Indicators on Mobile/Tablet */}
         <div className="xl:hidden border-t border-[#1A2F24]/70 px-4 sm:px-6 py-2 flex items-center gap-2 overflow-x-auto gb-scroll">
-          {integrationStatuses.map((item) => (
+          {serviceStatuses.map((item) => (
             <div
               key={item.key}
-              className="inline-flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-lg bg-[#0B1611] border border-[#1A2F24] text-[11px] font-mono"
+              className="inline-flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-lg bg-[#0B1611] border border-[#1A2F24] text-[11px] font-medium"
             >
               {renderStatusDot(item.state)}
-              <span className="text-[#F3F7F4]">{item.label}:</span>
               <span
                 className={
                   item.state === "online"
-                    ? "text-[#57DCA0]"
+                    ? "text-[#F3F7F4]"
                     : item.state === "warning" || item.state === "loading"
                       ? "text-[#E7BD71]"
-                      : "text-red-400"
+                      : "text-red-300"
                 }
               >
-                {item.detail}
+                {item.label}
               </span>
             </div>
           ))}
         </div>
       </header>
 
-      {/* Cold-Start Friendly Banner (shown when initial Render request takes > 4s) */}
+      {/* Friendly Cold-Start Banner (> 4s on initial load) */}
       {initialColdStart && (
         <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4">
           <div className="rounded-2xl bg-[#0B1611] border border-[#E7BD71]/40 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
@@ -599,10 +588,10 @@ export function GrantBridgeDashboard() {
               <Clock className="w-4 h-4 shrink-0 animate-pulse" />
               <span>
                 <strong className="text-[#F3F7F4]">
-                  Acordando o servidor no Render...
+                  Iniciando o servidor da plataforma...
                 </strong>{" "}
-                A primeira requisição no plano gratuito pode levar cerca de 30 a
-                50 segundos. Aguarde enquanto conectamos ao Neon PostgreSQL.
+                A primeira consulta pode levar de 30 a 50 segundos enquanto
+                carregamos o radar de oportunidades climáticas.
               </span>
             </div>
             <span className="font-mono text-[#E7BD71] shrink-0">
@@ -612,15 +601,15 @@ export function GrantBridgeDashboard() {
         </div>
       )}
 
-      {/* Backend Unreachable Banner (never fakes online state) */}
+      {/* Service Unreachable Banner */}
       {!healthLoading && healthError && (
         <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4">
           <div className="rounded-2xl bg-red-950/35 border border-red-500/35 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-xs text-red-200">
             <div className="flex items-center gap-2.5">
               <WifiOff className="w-4 h-4 text-red-400 shrink-0" />
               <span>
-                <strong>API temporariamente indisponível:</strong> {healthError}{" "}
-                (<code className="font-mono text-red-100">{API_BASE_URL}</code>)
+                <strong>Plataforma temporariamente indisponível:</strong>{" "}
+                {healthError}
               </span>
             </div>
             <button
@@ -652,25 +641,19 @@ export function GrantBridgeDashboard() {
               </h1>
 
               <p className="text-sm sm:text-base text-[#8EA396] max-w-2xl leading-relaxed">
-                Raspamos editais globais ao vivo com{" "}
-                <strong className="text-[#F3F7F4]">Firecrawl v2</strong>,
-                calculamos o{" "}
-                <strong className="text-[#57DCA0]">Match Score</strong> real com
-                sua ONG ou cooperativa, redigimos a{" "}
-                <strong className="text-[#F3F7F4]">
-                  Project Concept Note em inglês
-                </strong>{" "}
-                via Gemini 2.5 Flash e disparamos alerta no celular via Nvoip
-                v3.
+                Mapeamos oportunidades globais em tempo real, calculamos a
+                compatibilidade com a sua organização, redigimos sua proposta
+                técnica em inglês pronta para submissão e enviamos alertas
+                direto no seu celular.
               </p>
 
               {/* Telemetry Strip */}
               <div className="grid grid-cols-3 gap-3 pt-2">
                 <div className="rounded-2xl bg-[#050B08]/90 border border-[#1A2F24] p-3.5">
                   <div className="flex items-center justify-between text-[#57DCA0] mb-1.5">
-                    <Database className="w-4 h-4" />
+                    <Globe2 className="w-4 h-4" />
                     <span className="font-mono text-[10px] uppercase text-[#8EA396]">
-                      Neon DB
+                      Radar
                     </span>
                   </div>
                   <div className="font-display text-2xl sm:text-3xl font-bold text-[#F3F7F4]">
@@ -681,7 +664,7 @@ export function GrantBridgeDashboard() {
                     )}
                   </div>
                   <p className="text-[11px] text-[#8EA396] mt-0.5">
-                    Editais Reais
+                    Editais Ativos
                   </p>
                 </div>
 
@@ -689,14 +672,14 @@ export function GrantBridgeDashboard() {
                   <div className="flex items-center justify-between text-[#E7BD71] mb-1.5">
                     <Sparkles className="w-4 h-4" />
                     <span className="font-mono text-[10px] uppercase text-[#8EA396]">
-                      Gemini
+                      Idioma
                     </span>
                   </div>
                   <div className="font-display text-2xl sm:text-3xl font-bold text-[#E7BD71]">
                     PT→EN
                   </div>
                   <p className="text-[11px] text-[#8EA396] mt-0.5">
-                    Concept Note
+                    Proposta Pronta
                   </p>
                 </div>
 
@@ -704,7 +687,7 @@ export function GrantBridgeDashboard() {
                   <div className="flex items-center justify-between text-[#57DCA0] mb-1.5">
                     <MessageSquare className="w-4 h-4" />
                     <span className="font-mono text-[10px] uppercase text-[#8EA396]">
-                      Nvoip v3
+                      Celular
                     </span>
                   </div>
                   <div className="font-display text-2xl sm:text-3xl font-bold text-[#57DCA0]">
@@ -738,12 +721,12 @@ export function GrantBridgeDashboard() {
                 Diagnóstico da Organização
               </h2>
               <span className="font-mono text-[11px] text-[#57DCA0] bg-[#050B08] border border-[#1A2F24] px-2.5 py-0.5 rounded-full">
-                POST /api/match
+                Passo 1
               </span>
             </div>
             <p className="text-xs sm:text-sm text-[#8EA396] mb-5 leading-relaxed">
               Descreva em português a atuação da sua ONG, cooperativa ou projeto
-              comunitário no Brasil para encontrar o edital mais aderente.
+              comunitário no Brasil para encontrar o edital mais compatível.
             </p>
 
             {/* 3 Quick-Fill Presets */}
@@ -801,7 +784,7 @@ export function GrantBridgeDashboard() {
                 />
               </div>
 
-              {/* WhatsApp / SMS Nvoip Field */}
+              {/* WhatsApp / SMS Alert Field */}
               <div className="rounded-2xl bg-[#050B08] border border-[#1A2F24] p-3.5">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                   <label
@@ -812,7 +795,7 @@ export function GrantBridgeDashboard() {
                     Telefone / WhatsApp com DDD (opcional)
                   </label>
                   <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-[#E7BD71]/12 text-[#E7BD71] border border-[#E7BD71]/30">
-                    Alerta Nvoip v3
+                    Alerta por WhatsApp / SMS
                   </span>
                 </div>
                 <input
@@ -839,9 +822,9 @@ export function GrantBridgeDashboard() {
                 <div className="rounded-xl bg-[#050B08] border border-[#E7BD71]/40 p-3 text-xs text-[#E7BD71] flex items-start gap-2">
                   <Clock className="w-4 h-4 shrink-0 mt-0.5 animate-pulse" />
                   <span>
-                    O backend no Render pode estar saindo do modo de suspensão
-                    (cold start ~30–50s) enquanto o Gemini 2.5 Flash redige sua
-                    proposta em inglês.
+                    Estamos finalizando a análise e redigindo sua proposta
+                    técnica em inglês. A primeira solicitação pode levar de 30 a
+                    50 segundos enquanto o servidor inicia.
                   </span>
                 </div>
               )}
@@ -854,18 +837,18 @@ export function GrantBridgeDashboard() {
                 {matchLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Calculando Match e Redigindo Proposta...</span>
+                    <span>Analisando Editais e Gerando Proposta...</span>
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4" />
-                    <span>Calcular Match + Redigir Proposta em Inglês</span>
+                    <span>Encontrar Edital Compatível e Gerar Proposta</span>
                   </>
                 )}
               </button>
             </form>
 
-            {/* Pipeline Terminal Log */}
+            {/* User-Friendly Progress Log */}
             {pipelineLogs.length > 0 && (
               <div className="mt-4 rounded-2xl bg-[#050B08] border border-[#1A2F24] p-3.5 font-mono text-[11px] text-[#57DCA0] space-y-1.5">
                 {pipelineLogs.map((line, index) => (
@@ -881,148 +864,153 @@ export function GrantBridgeDashboard() {
 
         {/* Right Column: Winning Match Dossier + Live Grants Radar */}
         <section className="lg:col-span-7 space-y-7">
-          {/* Match Result Dossier (Real POST /api/match) */}
-          {matchResult && (
-            <div
-              ref={resultRef}
-              className="gb-card rounded-3xl p-6 sm:p-7 border border-[#20BD80]/45"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-4 pb-5 border-b border-[#1A2F24]">
-                <div className="space-y-1.5 flex-1 min-w-[220px]">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-1 font-mono text-[11px] font-semibold uppercase tracking-wider bg-[#20BD80]/20 text-[#57DCA0] border border-[#20BD80]/40 px-2.5 py-0.5 rounded-full">
-                      <Award className="w-3.5 h-3.5" />
-                      Edital Vencedor
-                    </span>
-                    <span className="font-mono text-[11px] text-[#8EA396]">
-                      Motor: {matchResult.ai_mode}
-                    </span>
-                  </div>
-                  <h2 className="font-display text-xl sm:text-2xl font-bold text-[#F3F7F4] leading-snug">
-                    {matchResult.matched_grant.title}
-                  </h2>
-                  <p className="text-xs text-[#57DCA0] font-medium">
-                    {matchResult.matched_grant.organization} •{" "}
-                    {matchResult.matched_grant.country} • Prazo:{" "}
-                    {matchResult.matched_grant.deadline}
-                  </p>
-                </div>
-
-                {/* Circular Green Match Score + Gold Funding Amount */}
-                <div className="flex items-center gap-3.5 bg-[#050B08] border border-[#1A2F24] rounded-2xl px-4 py-3 shrink-0">
-                  <MatchScoreRing score={matchResult.match_score} />
-                  <div>
-                    <div className="font-mono text-[10px] uppercase tracking-wider text-[#8EA396]">
-                      Financiamento
+          {/* Match Result Dossier */}
+          {matchResult && (() => {
+            const alertDisplay = getAlertDisplay(
+              matchResult.notification.status,
+            );
+            return (
+              <div
+                ref={resultRef}
+                className="gb-card rounded-3xl p-6 sm:p-7 border border-[#20BD80]/45"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-4 pb-5 border-b border-[#1A2F24]">
+                  <div className="space-y-1.5 flex-1 min-w-[220px]">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center gap-1 font-mono text-[11px] font-semibold uppercase tracking-wider bg-[#20BD80]/20 text-[#57DCA0] border border-[#20BD80]/40 px-2.5 py-0.5 rounded-full">
+                        <Award className="w-3.5 h-3.5" />
+                        Edital Recomendado
+                      </span>
+                      <span className="font-mono text-[11px] text-[#8EA396]">
+                        Análise Inteligente
+                      </span>
                     </div>
-                    <div className="font-display font-bold text-sm text-[#E7BD71] mt-0.5">
-                      {matchResult.matched_grant.funding_amount}
+                    <h2 className="font-display text-xl sm:text-2xl font-bold text-[#F3F7F4] leading-snug">
+                      {matchResult.matched_grant.title}
+                    </h2>
+                    <p className="text-xs text-[#57DCA0] font-medium">
+                      {matchResult.matched_grant.organization} •{" "}
+                      {matchResult.matched_grant.country} • Prazo:{" "}
+                      {matchResult.matched_grant.deadline}
+                    </p>
+                  </div>
+
+                  {/* Circular Green Match Score + Gold Funding Amount */}
+                  <div className="flex items-center gap-3.5 bg-[#050B08] border border-[#1A2F24] rounded-2xl px-4 py-3 shrink-0">
+                    <MatchScoreRing score={matchResult.match_score} />
+                    <div>
+                      <div className="font-mono text-[10px] uppercase tracking-wider text-[#8EA396]">
+                        Financiamento
+                      </div>
+                      <div className="font-display font-bold text-sm text-[#E7BD71] mt-0.5">
+                        {matchResult.matched_grant.funding_amount}
+                      </div>
+                      <a
+                        href={safeExternalHref(
+                          matchResult.matched_grant.source_url,
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[11px] text-[#57DCA0] hover:underline mt-1"
+                      >
+                        <span>Portal Oficial</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
                     </div>
-                    <a
-                      href={safeExternalHref(
-                        matchResult.matched_grant.source_url,
-                      )}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[11px] text-[#57DCA0] hover:underline mt-1"
-                    >
-                      <span>Portal Oficial</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
                   </div>
+                </div>
+
+                {/* Reasoning (PT-BR) + Mobile Alert Status */}
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 my-4">
+                  <div className="sm:col-span-7 rounded-2xl bg-[#050B08] border border-[#1A2F24] p-4">
+                    <div className="font-mono text-[10px] uppercase tracking-wider text-[#57DCA0] mb-1.5">
+                      Por que este edital?
+                    </div>
+                    <p className="text-xs sm:text-sm text-[#F3F7F4]/90 leading-relaxed">
+                      {matchResult.match_reasoning_pt}
+                    </p>
+                  </div>
+
+                  <div className="sm:col-span-5 rounded-2xl bg-[#050B08] border border-[#1A2F24] p-4 flex flex-col justify-between gap-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-[#E7BD71]">
+                        Alerta por WhatsApp / SMS
+                      </span>
+                      <span
+                        className={`font-mono text-[10px] px-2 py-0.5 rounded-full ${alertDisplay.className}`}
+                      >
+                        {alertDisplay.badge}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#8EA396] leading-snug">
+                      {alertDisplay.message}
+                    </p>
+                    {matchResult.notification.phone && (
+                      <span className="font-mono text-[11px] text-[#F3F7F4]">
+                        Celular: +{matchResult.notification.phone}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* English Concept Note Viewer + Copy / .MD / .TXT Actions */}
+                <div className="mt-5">
+                  <div className="flex flex-wrap items-center justify-between gap-2.5 mb-2.5">
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-[#57DCA0]" />
+                      <h3 className="font-display font-semibold text-sm text-[#F3F7F4]">
+                        Proposta Técnica em Inglês (Project Concept Note)
+                      </h3>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void handleCopyProposal()}
+                        className="inline-flex items-center gap-1.5 text-xs font-display font-bold bg-[#20BD80] hover:bg-[#29D18F] text-[#050B08] px-3 py-1.5 rounded-lg transition cursor-pointer"
+                      >
+                        {copiedProposal ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" />
+                            <span>Copiado!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Copiar Texto</span>
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadProposal("md")}
+                        className="inline-flex items-center gap-1.5 text-xs font-mono bg-[#050B08] hover:bg-[#1A2F24]/60 text-[#F3F7F4] border border-[#1A2F24] hover:border-[#20BD80]/50 px-3 py-1.5 rounded-lg transition cursor-pointer"
+                      >
+                        <Download className="w-3.5 h-3.5 text-[#57DCA0]" />
+                        <span>.MD</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadProposal("txt")}
+                        className="inline-flex items-center gap-1.5 text-xs font-mono bg-[#050B08] hover:bg-[#1A2F24]/60 text-[#F3F7F4] border border-[#1A2F24] hover:border-[#20BD80]/50 px-3 py-1.5 rounded-lg transition cursor-pointer"
+                      >
+                        <FileDown className="w-3.5 h-3.5 text-[#57DCA0]" />
+                        <span>.TXT</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <pre className="gb-scroll max-h-[430px] overflow-y-auto rounded-2xl bg-[#050B08] border border-[#1A2F24] p-5 text-xs sm:text-[13px] text-[#F3F7F4]/95 whitespace-pre-wrap font-mono leading-relaxed">
+                    {matchResult.generated_proposal_en}
+                  </pre>
                 </div>
               </div>
+            );
+          })()}
 
-              {/* Reasoning (PT-BR) + Nvoip Notification Status */}
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 my-4">
-                <div className="sm:col-span-7 rounded-2xl bg-[#050B08] border border-[#1A2F24] p-4">
-                  <div className="font-mono text-[10px] uppercase tracking-wider text-[#57DCA0] mb-1.5">
-                    Por que este edital?
-                  </div>
-                  <p className="text-xs sm:text-sm text-[#F3F7F4]/90 leading-relaxed">
-                    {matchResult.match_reasoning_pt}
-                  </p>
-                </div>
-
-                <div className="sm:col-span-5 rounded-2xl bg-[#050B08] border border-[#1A2F24] p-4 flex flex-col justify-between gap-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-[#E7BD71]">
-                      Alerta Nvoip v3
-                    </span>
-                    <span
-                      className={`font-mono text-[10px] px-2 py-0.5 rounded-full ${getNvoipBadgeStyle(matchResult.notification.status).className}`}
-                    >
-                      {getNvoipBadgeStyle(matchResult.notification.status).label}
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#8EA396] leading-snug">
-                    {matchResult.notification.detail}
-                  </p>
-                  {matchResult.notification.phone && (
-                    <span className="font-mono text-[11px] text-[#F3F7F4]">
-                      Destino: +{matchResult.notification.phone}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* English Concept Note Viewer + Copy / .MD / .TXT Actions */}
-              <div className="mt-5">
-                <div className="flex flex-wrap items-center justify-between gap-2.5 mb-2.5">
-                  <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-[#57DCA0]" />
-                    <h3 className="font-display font-semibold text-sm text-[#F3F7F4]">
-                      Project Concept Note (Pronta em Inglês)
-                    </h3>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => void handleCopyProposal()}
-                      className="inline-flex items-center gap-1.5 text-xs font-display font-bold bg-[#20BD80] hover:bg-[#29D18F] text-[#050B08] px-3 py-1.5 rounded-lg transition cursor-pointer"
-                    >
-                      {copiedProposal ? (
-                        <>
-                          <Check className="w-3.5 h-3.5" />
-                          <span>Copiado!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3.5 h-3.5" />
-                          <span>Copiar Texto</span>
-                        </>
-                      )}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleDownloadProposal("md")}
-                      className="inline-flex items-center gap-1.5 text-xs font-mono bg-[#050B08] hover:bg-[#1A2F24]/60 text-[#F3F7F4] border border-[#1A2F24] hover:border-[#20BD80]/50 px-3 py-1.5 rounded-lg transition cursor-pointer"
-                    >
-                      <Download className="w-3.5 h-3.5 text-[#57DCA0]" />
-                      <span>.MD</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleDownloadProposal("txt")}
-                      className="inline-flex items-center gap-1.5 text-xs font-mono bg-[#050B08] hover:bg-[#1A2F24]/60 text-[#F3F7F4] border border-[#1A2F24] hover:border-[#20BD80]/50 px-3 py-1.5 rounded-lg transition cursor-pointer"
-                    >
-                      <FileDown className="w-3.5 h-3.5 text-[#57DCA0]" />
-                      <span>.TXT</span>
-                    </button>
-                  </div>
-                </div>
-
-                <pre className="gb-scroll max-h-[430px] overflow-y-auto rounded-2xl bg-[#050B08] border border-[#1A2F24] p-5 text-xs sm:text-[13px] text-[#F3F7F4]/95 whitespace-pre-wrap font-mono leading-relaxed">
-                  {matchResult.generated_proposal_en}
-                </pre>
-              </div>
-            </div>
-          )}
-
-          {/* Live Grants Radar (Real GET /api/grants) */}
+          {/* Live Grants Radar */}
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
@@ -1031,8 +1019,8 @@ export function GrantBridgeDashboard() {
                   Radar de Editais Internacionais
                 </h2>
                 <p className="text-xs text-[#8EA396] mt-0.5">
-                  Dados ao vivo do Neon PostgreSQL • atualizáveis via Firecrawl
-                  v2.
+                  Oportunidades climáticas internacionais atualizadas em tempo
+                  real.
                 </p>
               </div>
 
@@ -1042,7 +1030,7 @@ export function GrantBridgeDashboard() {
                 className="inline-flex items-center gap-1.5 text-xs font-semibold bg-[#0B1611] hover:bg-[#20BD80]/12 text-[#57DCA0] border border-[#1A2F24] hover:border-[#20BD80]/50 px-3.5 py-2 rounded-xl transition cursor-pointer"
               >
                 <PlusCircle className="w-4 h-4" />
-                <span>Adicionar via URL (Firecrawl)</span>
+                <span>Adicionar Edital</span>
               </button>
             </div>
 
@@ -1100,7 +1088,7 @@ export function GrantBridgeDashboard() {
               <div className="gb-card rounded-2xl p-6 text-center space-y-3 border border-red-500/30">
                 <AlertTriangle className="w-6 h-6 text-red-400 mx-auto" />
                 <div className="text-sm font-medium text-[#F3F7F4]">
-                  Não foi possível carregar os editais do Render
+                  Não foi possível carregar os editais no momento
                 </div>
                 <p className="text-xs text-[#8EA396] max-w-md mx-auto">
                   {grantsError}
@@ -1120,8 +1108,8 @@ export function GrantBridgeDashboard() {
                   Nenhum edital encontrado para os filtros aplicados.
                 </p>
                 <p className="text-xs text-[#8EA396]">
-                  Limpe a busca ou raspe um novo edital internacional com o
-                  Firecrawl v2.
+                  Limpe a busca ou adicione uma nova oportunidade internacional
+                  ao radar.
                 </p>
               </div>
             ) : (
@@ -1155,7 +1143,8 @@ export function GrantBridgeDashboard() {
 
                         {isWinner ? (
                           <span className="font-mono text-[11px] font-semibold bg-[#20BD80]/20 text-[#57DCA0] border border-[#20BD80]/45 px-2.5 py-1 rounded-full shrink-0">
-                            ★ Melhor Match ({matchResult.match_score}%)
+                            ★ Melhor Compatibilidade ({matchResult.match_score}
+                            %)
                           </span>
                         ) : (
                           <span className="font-mono text-[11px] font-semibold bg-[#E7BD71]/12 text-[#E7BD71] border border-[#E7BD71]/30 px-2.5 py-1 rounded-full shrink-0">
@@ -1210,14 +1199,14 @@ export function GrantBridgeDashboard() {
             GrantBridge AI • Hack Brasil 2026 (Meio Ambiente &amp; Economia
             Verde)
           </span>
-          <span className="font-mono text-[11px] text-[#8EA396]">
-            Next.js + Zod • FastAPI Render • Neon PostgreSQL • Firecrawl v2 •
-            Gemini 2.5 Flash • Nvoip v3
+          <span className="text-[11px] text-[#8EA396]">
+            Financiamento Climático Global • Propostas Técnicas em Inglês •
+            Alertas Diretos
           </span>
         </div>
       </footer>
 
-      {/* Live Firecrawl v2 URL Ingestion Modal */}
+      {/* Add Grant Modal */}
       <IngestModal
         open={ingestModalOpen}
         onClose={() => setIngestModalOpen(false)}

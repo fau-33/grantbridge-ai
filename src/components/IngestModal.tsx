@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { AlertCircle, CheckCircle2, Flame, Loader2, X } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, Sparkles, X } from "lucide-react";
 import { ApiError, ingestGrantUrl } from "@/lib/api";
 import { IngestUrlInputSchema, type Grant } from "@/lib/schemas";
 
@@ -52,7 +52,7 @@ export function IngestModal({
     if (!parsed.success) {
       setErrorMessage(
         parsed.error.issues[0]?.message ||
-          "Informe uma URL pública válida (https://...).",
+          "Informe um link público válido (https://...).",
       );
       return;
     }
@@ -66,7 +66,7 @@ export function IngestModal({
     try {
       const response = await ingestGrantUrl(parsed.data);
       setSuccessMessage(
-        `Edital "${response.grant.title}" raspado via Firecrawl v2 e salvo no Neon PostgreSQL.`,
+        `Oportunidade "${response.grant.title}" mapeada e publicada no radar com sucesso.`,
       );
       setUrl("");
       onGrantIngested(response.grant);
@@ -77,7 +77,9 @@ export function IngestModal({
       if (err instanceof ApiError) {
         setErrorMessage(err.detail || err.message);
       } else {
-        setErrorMessage("Falha inesperada ao raspar e indexar o edital.");
+        setErrorMessage(
+          "Não foi possível mapear este edital no momento. Tente novamente.",
+        );
       }
     } finally {
       window.clearTimeout(coldStartTimer);
@@ -102,14 +104,14 @@ export function IngestModal({
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
             <span className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-[#57DCA0] bg-[#20BD80]/12 border border-[#20BD80]/30 px-2.5 py-0.5 rounded-full mb-2">
-              <Flame className="w-3.5 h-3.5" />
-              Raspagem ao Vivo • Firecrawl v2
+              <Sparkles className="w-3.5 h-3.5" />
+              Mapeamento Inteligente
             </span>
             <h3
               id="ingest-modal-title"
               className="font-display text-xl font-bold text-[#F3F7F4]"
             >
-              Adicionar Novo Edital via URL
+              Adicionar Novo Edital
             </h3>
           </div>
           <button
@@ -124,24 +126,21 @@ export function IngestModal({
         </div>
 
         <p className="text-sm text-[#8EA396] leading-relaxed mb-5">
-          Cole a URL pública de qualquer fundo ou edital ambiental internacional.
-          O <strong className="text-[#F3F7F4]">Firecrawl v2</strong> extrai o
-          conteúdo em Markdown, o{" "}
-          <strong className="text-[#F3F7F4]">Gemini 2.5 Flash</strong> estrutura
-          os metadados e o novo edital entra imediatamente no{" "}
-          <strong className="text-[#F3F7F4]">Neon PostgreSQL</strong>.
+          Cole o link público de qualquer fundo ou edital ambiental
+          internacional. Nossa plataforma extrai os requisitos, organiza os
+          prazos e publica a oportunidade imediatamente no radar.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label
-              htmlFor="firecrawl-url-input"
+              htmlFor="grant-url-input"
               className="block text-xs font-medium text-[#F3F7F4] mb-1.5"
             >
-              URL Pública do Edital Internacional
+              Link Público do Edital Internacional
             </label>
             <input
-              id="firecrawl-url-input"
+              id="grant-url-input"
               type="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
@@ -156,8 +155,8 @@ export function IngestModal({
             <div className="rounded-xl bg-[#050B08] border border-[#E7BD71]/35 p-3 text-xs text-[#E7BD71] flex items-start gap-2">
               <Loader2 className="w-4 h-4 shrink-0 animate-spin mt-0.5" />
               <span>
-                Raspagem em andamento — se esta for a primeira chamada no Render,
-                o servidor gratuito pode levar de 30 a 50 segundos para acordar.
+                Mapeamento em andamento — a primeira consulta pode levar de 30 a
+                50 segundos enquanto o servidor inicia.
               </span>
             </div>
           )}
@@ -193,12 +192,12 @@ export function IngestModal({
               {submitting ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>Raspando via Firecrawl v2...</span>
+                  <span>Mapeando oportunidade...</span>
                 </>
               ) : (
                 <>
-                  <Flame className="w-3.5 h-3.5" />
-                  <span>Raspar e Indexar Agora</span>
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Adicionar ao Radar</span>
                 </>
               )}
             </button>
