@@ -28,31 +28,52 @@ O **GrantBridge AI** automatiza toda a ponte entre a iniciativa ambiental brasil
 ## 🏗️ Arquitetura
 
 ```text
-[Vercel Static Frontend: ./index.html (Tailwind + Lucide)]
+[Vercel Frontend: Next.js (App Router) + TypeScript + Tailwind CSS + Zod]
                        │
-                       ▼  HTTPS / JSON
-     [Backend Python FastAPI: /backend/main.py]
-       ├── Neon Serverless PostgreSQL (tabelas: grants, proposals)
-       ├── Firecrawl API v2 (/v2/scrape -> Markdown)
-       ├── Google Gemini 2.5 Flash (extração, Match Score e redação EN)
-       └── Nvoip API v3 (alertas SMS/WhatsApp via X-Nvoip-Api-Key)
+                       ▼  HTTPS / JSON (timeout 60s para cold start)
+ [Render Backend: Python FastAPI — https://grantbridge-ai.onrender.com]
+   ├── Neon Serverless PostgreSQL (tabelas: grants, proposals)
+   ├── Firecrawl API v2 (/v2/scrape -> Markdown)
+   ├── Google Gemini 2.5 Flash (extração, Match Score e redação EN)
+   └── Nvoip API v3 (alertas SMS/WhatsApp via X-Nvoip-Api-Key)
 ```
+
+### Stack de Produção
+
+| Camada | Tecnologia | Hospedagem / Provedor |
+|---|---|---|
+| **Frontend Web** | Next.js (App Router), TypeScript, Tailwind CSS, Zod, Lucide React | **Vercel** |
+| **Backend API** | Python FastAPI, Pydantic, httpx | **Render** (`https://grantbridge-ai.onrender.com`) |
+| **Banco de Dados** | PostgreSQL Serverless (`psycopg 3` + SSL) | **Neon PostgreSQL** |
+| **Web Scraping** | Firecrawl API v2 (`/v2/scrape`) | **Firecrawl** |
+| **Inteligência Artificial** | Google Gemini 2.5 Flash | **Google AI** |
+| **Notificações** | Nvoip API v3 (`X-Nvoip-Api-Key`) | **Nvoip** |
 
 ### Estrutura do Repositório
 
 ```text
 grantbridge-ai/
-├── index.html              # Frontend principal (publicado na Vercel com Root Directory ./)
-├── README.md               # Documentação do projeto
-├── .gitignore              # Protege .env, __pycache__, .venv e arquivos locais
+├── package.json              # Dependências e scripts Next.js + TypeScript + Zod + Lucide
+├── tsconfig.json             # Configuração TypeScript estrita
+├── next.config.ts            # Configuração do Next.js (App Router)
+├── README.md                 # Documentação do projeto
+├── .gitignore                # Protege .env, node_modules, .next, __pycache__ e .venv
+├── src/
+│   ├── app/                  # Rotas, layout e estilos globais (Next.js App Router)
+│   │   ├── layout.tsx
+│   │   ├── globals.css
+│   │   └── page.tsx
+│   └── lib/
+│       ├── schemas.ts        # Schemas Zod (Grant, IngestUrl, MatchRequest, MatchResponse)
+│       └── api.ts            # Cliente HTTP tipado (Render + timeout 60s + validação Zod)
 └── backend/
-    ├── main.py             # API FastAPI (/api/health, /api/grants, /api/ingest-url, /api/match)
-    ├── config.py           # Leitura segura de variáveis de ambiente
-    ├── db.py               # Conexão Neon PostgreSQL (SSL) + criação de tabelas e seed
-    ├── seed_data.py        # 6 editais climáticos internacionais reais
-    ├── services.py         # Integrações Firecrawl v2, Gemini 2.5 Flash e Nvoip v3
-    ├── requirements.txt    # Dependências Python
-    └── .env.example        # Modelo de variáveis de ambiente
+    ├── main.py               # API FastAPI (/api/health, /api/grants, /api/ingest-url, /api/match, /api/proposals)
+    ├── config.py             # Leitura segura de variáveis de ambiente
+    ├── db.py                 # Conexão Neon PostgreSQL (SSL) + criação de tabelas e seed
+    ├── seed_data.py          # 6 editais climáticos internacionais reais
+    ├── services.py           # Integrações Firecrawl v2, Gemini 2.5 Flash e Nvoip v3
+    ├── requirements.txt      # Dependências Python
+    └── .env.example          # Modelo de variáveis de ambiente
 ```
 
 ---
@@ -75,7 +96,7 @@ Preencha `backend/.env` com suas chaves (nunca faça commit do `.env`):
 | `GEMINI_API_KEY` | Chave da API do Google Gemini (`gemini-2.5-flash`) |
 | `NVOIP_API_KEY` | Chave da API Nvoip v3 (enviada no cabeçalho `X-Nvoip-Api-Key`) |
 
-### 2. Instalar dependências e iniciar o FastAPI
+### 2. Instalar dependências e iniciar o Backend (FastAPI)
 
 ```bash
 cd backend
@@ -87,25 +108,46 @@ uvicorn main:app --reload --port 8000
 
 Na inicialização (`startup`), o backend cria automaticamente as tabelas `grants` e `proposals` no Neon PostgreSQL e popula os 6 editais climáticos iniciais caso a tabela `grants` esteja vazia.
 
-### 3. Abrir o Frontend (`index.html`)
+### 3. Instalar dependências e iniciar o Frontend (Next.js)
 
-Basta servir a raiz do repositório localmente:
+Na raiz do repositório:
 
 ```bash
-# Na raiz do repositório
-python3 -m http.server 3000
+npm install
+npm run dev
 ```
 
-Acesse `http://localhost:3000`. O frontend aponta automaticamente para `http://localhost:8000` (você também pode passar `?api=https://sua-api.onrender.com` na URL ou alterar a constante `API_BASE_URL` no topo do `<script>` do `index.html`).
+Acesse `http://localhost:3000`.
+
+Por padrão, o cliente da API em `src/lib/api.ts` aponta para `process.env.NEXT_PUBLIC_API_URL || "https://grantbridge-ai.onrender.com"`, com suporte a timeout de **60 segundos** para lidar com o *cold start* do plano gratuito do Render. Para testar contra o backend local, crie um arquivo `.env.local` (ignorado pelo Git) com:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+Para validar o build de produção do frontend:
+
+```bash
+npm run build
+```
+
+---
+
+## ☁️ Deploy em Produção
+
+- **Frontend (Vercel):** Conecte o repositório na Vercel com **Root Directory** na raiz (`./`). Opcionalmente defina `NEXT_PUBLIC_API_URL=https://grantbridge-ai.onrender.com` nas variáveis de ambiente do projeto.
+- **Backend (Render):** Serviço Web Python com **Root Directory** `backend`, comando `uvicorn main:app --host 0.0.0.0 --port $PORT` e variáveis `DATABASE_URL`, `FIRECRAWL_API_KEY`, `GEMINI_API_KEY` e `NVOIP_API_KEY` configuradas no painel do Render (`https://grantbridge-ai.onrender.com`).
 
 ---
 
 ## 🔌 Endpoints da API
 
+Base de produção: `https://grantbridge-ai.onrender.com`
+
 | Método | Rota | Descrição |
 |---|---|---|
-| `GET` | `/api/health` | Verifica status de conexão do Neon DB, Firecrawl v2, Gemini AI e Nvoip v3 |
+| `GET` | `/api/health` | Verifica status de conexão do Neon PostgreSQL, Firecrawl v2, Gemini 2.5 Flash e Nvoip v3 |
 | `GET` | `/api/grants` | Lista todos os editais climáticos salvos no Neon PostgreSQL |
-| `POST` | `/api/ingest-url` | Raspa uma URL via Firecrawl v2, estrutura via Gemini e salva em `grants` |
-| `POST` | `/api/match` | Calcula o Match Score, gera a proposta em inglês, salva em `proposals` e aciona alerta Nvoip |
+| `POST` | `/api/ingest-url` | Raspa uma URL via Firecrawl v2, estrutura via Gemini 2.5 Flash e salva em `grants` |
+| `POST` | `/api/match` | Calcula o Match Score, gera a proposta em inglês, salva em `proposals` e aciona alerta Nvoip v3 |
 | `GET` | `/api/proposals` | Lista o histórico recente de propostas geradas |
