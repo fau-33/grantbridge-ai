@@ -25,18 +25,66 @@ O **GrantBridge AI** automatiza toda a ponte entre a iniciativa ambiental brasil
 
 ---
 
+## ⚡ Como Testar em 1 Minuto (Avaliadores Hack Brasil 2026)
+
+> Nenhuma instalação necessária. O backend roda no plano gratuito do Render: a **primeira requisição pode levar até ~50s** (cold start). As seguintes respondem em poucos segundos.
+
+1. **Acorde a API (10s):** abra [`https://grantbridge-ai.onrender.com/api/health`](https://grantbridge-ai.onrender.com/api/health) e confirme `"status": "ok"` com o estado de Neon PostgreSQL, Firecrawl v2, Gemini 2.5 Flash e Nvoip v3.
+2. **Abra o app (10s):** acesse [`https://grantbridge-ai-theta.vercel.app`](https://grantbridge-ai-theta.vercel.app) e veja os editais climáticos internacionais carregados do Neon.
+3. **Gere um Match + Concept Note (30s):** cole um perfil de organização, por exemplo:
+   > *Cooperativa de agricultoras familiares no sul do Pará que recupera áreas degradadas com sistemas agroflorestais e viveiros de mudas nativas, beneficiando 120 famílias.*
+
+   Opcionalmente informe um WhatsApp com DDD para receber o alerta via Nvoip v3. O app retorna o **Match Score (0–100)**, a justificativa em português e a *Project Concept Note* completa em inglês.
+4. **(Opcional) Raspagem ao vivo (10s):** clique em **Adicionar Edital** e cole a URL pública de uma chamada internacional (ex.: `https://www.rufford.org/`). O Firecrawl v2 raspa a página e o Gemini estrutura o edital no banco.
+
+Via terminal:
+
+```bash
+curl -s https://grantbridge-ai.onrender.com/api/health
+curl -s https://grantbridge-ai.onrender.com/api/grants
+curl -s -X POST https://grantbridge-ai.onrender.com/api/match \
+  -H "Content-Type: application/json" \
+  -d '{"ong_profile": "Cooperativa de agricultoras familiares no Pará que recupera áreas degradadas com agrofloresta."}'
+```
+
+---
+
 ## 🏗️ Arquitetura
 
-```text
-[Vercel Frontend: Next.js (App Router) + TypeScript + Tailwind CSS + Zod]
-                       │
-                       ▼  HTTPS / JSON (timeout 60s para cold start)
- [Render Backend: Python FastAPI — https://grantbridge-ai.onrender.com]
-   ├── Neon Serverless PostgreSQL (tabelas: grants, proposals)
-   ├── Firecrawl API v2 (/v2/scrape -> Markdown)
-   ├── Google Gemini 2.5 Flash (extração, Match Score e redação EN)
-   └── Nvoip API v3 (alertas SMS/WhatsApp via X-Nvoip-Api-Key)
+```mermaid
+flowchart LR
+    user(["Líder comunitário / ONG"])
+
+    subgraph vercel["Vercel — Frontend"]
+        next["Next.js App Router<br/>TypeScript + Tailwind CSS"]
+        zod["Zod<br/>validação de entrada e de respostas"]
+        next <--> zod
+    end
+
+    subgraph render["Render — Backend"]
+        api["FastAPI + Pydantic<br/>grantbridge-ai.onrender.com"]
+        guard["Segurança<br/>CORS · rate limit por IP<br/>anti-SSRF · máscara de telefone"]
+        api --- guard
+    end
+
+    neon[("Neon PostgreSQL<br/>grants · proposals")]
+    firecrawl["Firecrawl v2<br/>/v2/scrape → Markdown"]
+    gemini["Google Gemini 2.5 Flash<br/>extração · Match Score · Concept Note EN"]
+    nvoip["Nvoip v3<br/>SMS / WhatsApp"]
+
+    user -->|"perfil da organização / URL de edital"| next
+    next -->|"HTTPS JSON (timeout 60s)"| api
+    api -->|"SQL + SSL"| neon
+    api -->|"POST /api/ingest-url"| firecrawl
+    firecrawl -->|"Markdown do edital"| gemini
+    api -->|"POST /api/match"| gemini
+    api -->|"alerta do edital vencedor"| nvoip
+    nvoip -.->|"notificação"| user
 ```
+
+**Fluxo de ingestão (`POST /api/ingest-url`):** URL validada contra SSRF → Firecrawl v2 raspa a página em Markdown → Gemini 2.5 Flash extrai título, financiador, país, valor, prazo e escopo → edital salvo em `grants` no Neon.
+
+**Fluxo de match (`POST /api/match`):** perfil validado por Zod (frontend) e Pydantic (backend) → editais carregados do Neon → Gemini 2.5 Flash calcula o Match Score e redige a Concept Note em inglês → Nvoip v3 envia o alerta → proposta salva em `proposals` (telefone mascarado no histórico público).
 
 ### Stack de Produção
 
@@ -60,7 +108,9 @@ grantbridge-ai/
 ├── .gitignore                # Protege .env, node_modules, .next, __pycache__ e .venv
 ├── src/
 │   ├── app/                  # Rotas, layout e estilos globais (Next.js App Router)
-│   │   ├── layout.tsx
+│   │   ├── layout.tsx        # Metadados SEO, OpenGraph e Twitter Card
+│   │   ├── opengraph-image.tsx # Imagem de preview 1200x630 gerada no build
+│   │   ├── twitter-image.tsx
 │   │   ├── globals.css
 │   │   └── page.tsx
 │   └── lib/
@@ -73,6 +123,8 @@ grantbridge-ai/
     ├── seed_data.py          # 6 editais climáticos internacionais reais
     ├── services.py           # Integrações Firecrawl v2, Gemini 2.5 Flash e Nvoip v3
     ├── requirements.txt      # Dependências Python
+    ├── requirements-dev.txt  # Dependências de teste (pytest)
+    ├── tests/                # Testes pytest (API, anti-SSRF, máscara de telefone, rate limit)
     └── .env.example          # Modelo de variáveis de ambiente
 ```
 
@@ -130,6 +182,25 @@ Para validar o build de produção do frontend:
 ```bash
 npm run build
 ```
+
+### 4. Rodar os testes automatizados do Backend
+
+Os testes usam `pytest` + `fastapi.testclient`, não precisam de chaves de API e nunca acessam serviços externos (banco, Firecrawl, Gemini, Nvoip e DNS são simulados):
+
+```bash
+cd backend
+pip install -r requirements-dev.txt
+pytest
+```
+
+Cobertura atual:
+
+| Arquivo | O que valida |
+|---|---|
+| `tests/test_api.py` | `GET /api/health` (status das integrações e headers de segurança) e `GET /api/grants` (listagem e erro sanitizado) |
+| `tests/test_ssrf.py` | `validate_public_url`: bloqueio de `127.0.0.1`, `169.254.169.254`, IPs privados/reservados, credenciais na URL, sufixos `.internal`/`.local`, portas não padrão e DNS que resolve para rede privada |
+| `tests/test_proposals_masking.py` | `_mask_phone` e mascaramento de telefone em `GET /api/proposals` |
+| `tests/test_rate_limit.py` | Rate limiter por IP (janela deslizante, isolamento por IP/bucket, `X-Forwarded-For`, 429 em `/api/match` e `/api/ingest-url`) |
 
 ---
 
