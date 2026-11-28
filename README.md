@@ -222,3 +222,11 @@ Base de produção: `https://grantbridge-ai.onrender.com`
 | `POST` | `/api/ingest-url` | Raspa uma URL via Firecrawl v2, estrutura via Gemini 2.5 Flash e salva em `grants` |
 | `POST` | `/api/match` | Calcula o Match Score, gera a proposta em inglês, salva em `proposals` e aciona alerta Nvoip v3 |
 | `GET` | `/api/proposals` | Lista o histórico recente de propostas geradas |
+
+---
+
+## Autor e Equipe
+
+- **Autor:** [Flávio Félix](https://github.com/fau-33)
+- **Equipe:** Solo Developer
+- **Evento:** Hack Brasil 2026

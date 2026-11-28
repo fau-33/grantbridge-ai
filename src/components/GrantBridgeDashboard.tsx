@@ -1280,11 +1280,26 @@ export function GrantBridgeDashboard() {
 
       {/* Footer */}
       <footer className="border-t border-[#1A2F24] py-6 text-xs text-[#8EA396]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
-          <span>
-            GrantBridge AI • Hack Brasil 2026 (Meio Ambiente &amp; Economia
-            Verde)
-          </span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-center sm:text-left">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+            <span>
+              GrantBridge AI • Hack Brasil 2026 (Meio Ambiente &amp; Economia
+              Verde)
+            </span>
+            <span className="hidden sm:inline text-[#1A2F24]">•</span>
+            <span>
+              Desenvolvido por{" "}
+              <a
+                href="https://github.com/fau-33"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#57DCA0] hover:text-[#20BD80] font-medium underline-offset-4 hover:underline transition"
+              >
+                Flávio Félix
+              </a>{" "}
+              (Equipe Solo Developer)
+            </span>
+          </div>
           <span className="text-[11px] text-[#8EA396]">
             Financiamento Climático Global • Propostas Técnicas em Inglês •
             Alertas Diretos
